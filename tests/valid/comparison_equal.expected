@@ -1,0 +1,7 @@
+ProgramNode @1:1
+  DeclAndAssignNode @1:1 (modifier: mutable, mutable: true, type: i32, name: a)
+    ValueNode @1:10 (INT: 1)
+  DeclAndAssignNode @2:1 (modifier: mutable, mutable: true, type: bool, name: r)
+    BinOpNode @2:16 (op: ==)
+      ValueNode @2:14 (ID: a)
+      ValueNode @2:18 (INT: 1)

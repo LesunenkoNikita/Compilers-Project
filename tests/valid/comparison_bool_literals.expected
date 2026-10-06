@@ -1,0 +1,6 @@
+ProgramNode @1:1
+  DeclarationNode @1:1 (modifier: mutable, mutable: true, type: bool, name: r)
+  AssignmentNode @2:1 (name: r)
+    BinOpNode @2:8 (op: !=)
+      ValueNode @2:6 (BOOL: true)
+      ValueNode @2:10 (BOOL: false)
