@@ -9,3 +9,6 @@ https://chatgpt.com/share/6ac55cc2-a6c0-83eb-b5e3-41537fd38740
 Used Gemini to correct the compiler implementation, create tests and rewrite
 the test runner script, also to create a README.md. Link:
 https://claude.ai/share/33d174f3-5572-4bd3-b171-fc7e452f4e0b
+
+One more fix with Claude:
+https://claude.ai/share/33d174f3-5572-4bd3-b171-fc7e452f4e0b

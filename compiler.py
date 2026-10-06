@@ -37,7 +37,6 @@ KEYWORDS = [
     ("🚫", TokenType.MODIFIER),            # constant
     ("🙂", TokenType.MODIFIER),            # mutable variable
     ("\u2639\ufe0f", TokenType.MODIFIER),  # ☹️  immutable variable (with variation selector)
-    ("\u2639", TokenType.MODIFIER),        # ☹   same, typed without the variation selector
     ("🐒", TokenType.TYPE),                # i32
     ("🦍", TokenType.TYPE),                # i64
     ("boo!👻", TokenType.TYPE),            # bool
@@ -160,7 +159,7 @@ class Lexer:
         self.error(f"Unknown character '{ch}'{hint}", line, col)
 
 
-MODIFIER_NAMES = {"🚫": "constant", "🙂": "mutable", "\u2639\ufe0f": "immutable", "\u2639": "immutable"}
+MODIFIER_NAMES = {"🚫": "constant", "🙂": "mutable", "\u2639\ufe0f": "immutable"}
 TYPE_NAMES = {"🐒": "i32", "🦍": "i64", "boo!👻": "bool"}
 OP_NAMES = {"✅": "==", "❎": "!="}
 
