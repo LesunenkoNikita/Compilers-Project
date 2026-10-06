@@ -1,0 +1,24 @@
+ProgramNode @1:1
+  DeclAndAssignNode @1:1 (modifier: constant, mutable: false, type: i64, name: limit)
+    ValueNode @1:14 (INT: 1000)
+  DeclAndAssignNode @2:1 (modifier: mutable, mutable: true, type: i32, name: counter)
+    ValueNode @2:16 (INT: 0)
+  DeclAndAssignNode @3:1 (modifier: immutable, mutable: false, type: bool, name: debug)
+    ValueNode @3:19 (BOOL: false)
+  IfNode @4:1
+    Condition
+      BinOpNode @4:11 (op: ==)
+        ValueNode @4:3 (ID: counter)
+        ValueNode @4:13 (INT: 0)
+    Then
+      AssignmentNode @6:3 (name: counter)
+        ValueNode @6:14 (INT: 1)
+      IfNode @7:3
+        Condition
+          ValueNode @7:5 (ID: debug)
+        Then
+          ExitNode @9:5 (name: counter)
+    Else
+      AssignmentNode @14:3 (name: counter)
+        ValueNode @14:14 (ID: limit)
+  ExitNode @16:1 (name: counter)

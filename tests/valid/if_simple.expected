@@ -1,0 +1,7 @@
+ProgramNode @1:1
+  IfNode @1:1
+    Condition
+      ValueNode @1:3 (BOOL: true)
+    Then
+      DeclAndAssignNode @3:3 (modifier: mutable, mutable: true, type: i32, name: x)
+        ValueNode @3:12 (INT: 1)
