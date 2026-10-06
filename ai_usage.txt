@@ -1,0 +1,11 @@
+Designed the syntax and the rules of the language by my own. Used Gemini to
+convert the syntax to EBNF. Also used Gemini to make a skeleton of a 
+compiler and test_runner and tests. Gemini prompt link:
+https://share.gemini.google/SujIpe6QlY2m
+
+Used ChatGPT to check correctness of grammar.ebnf and change it a bit. Link:
+https://chatgpt.com/share/6ac55cc2-a6c0-83eb-b5e3-41537fd38740
+
+Used Gemini to correct the compiler implementation, create tests and rewrite
+the test runner script, also to create a README.md. Link:
+https://claude.ai/share/33d174f3-5572-4bd3-b171-fc7e452f4e0b
