@@ -1,0 +1,8 @@
+ProgramNode @1:1
+  DeclAndAssignNode @1:1 (modifier: mutable, mutable: true, type: bool, name: ok)
+    ValueNode @1:15 (BOOL: true)
+  IfNode @2:1
+    Condition
+      ValueNode @2:3 (ID: ok)
+    Then
+      ExitNode @4:3 (name: ok)

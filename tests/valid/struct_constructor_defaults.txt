@@ -1,0 +1,21 @@
+🏰 Point
+{
+  🙂 🐒 x
+  🙂 🐒 y
+}
+🏰 Counter
+{
+  🙂 🦍 value => 10
+  ☹️ boo!👻 enabled
+  🚫 🐒 limit => 99
+}
+⚙️ Point mirror(Point p)
+{
+  🔙 Point(p.y, p.x)
+}
+🙂 Point a => Point(1, 2)
+☹️ Point b => mirror(a)
+🖨️(a)
+🖨️(b)
+🖨️(Counter(👍))
+🖨️(mirror(Point(5, 6)).x)

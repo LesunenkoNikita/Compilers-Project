@@ -1,46 +1,131 @@
-Program = Statement , { Statement } ;
+(* ===================== Program structure ===================== *)
+
+Program = TopItem , { TopItem } ;
+
+TopItem = Statement
+        | FunctionDecl
+        | StructDecl ;
+
+(* Functions and structures are declared only at the top level. *)
+
+FunctionDecl = "⚙️" , ResultType , Identifier , "(" , [ ParamList ] , ")" , NewLine ,
+               FunctionBody ;
+
+(* Inside a function body Statement also includes ReturnStatement, at any depth
+   (also inside 🤔 / 🤨 blocks); outside function bodies it is an error.
+   Every path through the body must end in ReturnStatement or ExitStatement:
+   a semantic rule, not a grammar one. *)
+FunctionBody = Block ;
+
+ReturnStatement = "🔙" , Expression , NewLine ;
+
+ParamList = Param , { "," , Param } ;
+
+Param = AnyType , Identifier ;
+
+ResultType = AnyType ;
+
+StructDecl = "🏰" , Identifier , NewLine ,
+             "{" , NewLine ,
+             { MemberFunctionDecl } , FieldDecl , { FieldDecl | MemberFunctionDecl } ,
+             "}" , NewLine ;
+
+FieldDecl = Modifier , DeclType , Identifier , [ "=>" , Expression ] , NewLine ;
+
+MemberFunctionDecl = "🛠️" , ResultType , Identifier , "(" , [ ParamList ] , ")" , NewLine ,
+                     FunctionBody ;
+
+(* ===================== Statements ===================== *)
 
 Statement = SimpleStatement
           | IfStatement
-          | ExitStatement ;
+          | ExitStatement
+          | PrintStatement
+          | ReadStatement
+          | CallStatement
+          | ReturnStatement ;   (* only inside a function body *)
 
 SimpleStatement = ( Declaration | Assignment | DeclAndAssign ) , NewLine ;
 
-Declaration = Modifier , Type , Identifier ;
+Declaration = Modifier , DeclType , Identifier ;
 
-Assignment = Identifier , "=>" , Expression ;
+DeclAndAssign = Modifier , DeclType , Identifier , "=>" , Expression ;
 
-DeclAndAssign = Modifier , Type , Identifier , "=>" , Expression ;
+Assignment = AssignTarget , "=>" , Expression ;
+
+AssignTarget = Identifier , { "." , Identifier } ;
 
 IfStatement = "🤔" , BooleanExpression , NewLine ,
-              "{" , NewLine ,
-              Statement , { Statement } ,
-              "}" , NewLine ,
+              Block ,
               [ "🤨" , NewLine ,
-                "{" , NewLine ,
-                Statement , { Statement } ,
-                "}" , NewLine
+                Block
               ] ;
+
+Block = "{" , NewLine ,
+        Statement , { Statement } ,
+        "}" , NewLine ;
 
 ExitStatement = "🚪" , Identifier , NewLine ;
 
-Expression = Value , [ ( "✅" | "❎" ) , Value ] ;
+PrintStatement = "🖨️" , "(" , ( StringLiteral | Expression ) , ")" , NewLine ;
 
-BooleanExpression = BooleanLiteral
-                  | Identifier
-                  | Value , ( "✅" | "❎" ) , Value ;
+ReadStatement = "📖" , "(" , AssignTarget , ")" , NewLine ;
 
+(* A call used as a statement: a Chain whose last element has Arguments;
+   its result is discarded. *)
+CallStatement = Chain , NewLine ;
+
+(* ===================== Expressions ===================== *)
+
+(* At most one comparison per expression; arithmetic binds tighter. *)
+Expression = Sum , [ ( "✅" | "❎" ) , Sum ] ;
+
+BooleanExpression = Expression ;   (* but not a lone IntegerLiteral *)
+
+Sum = Product , { ( "➕" | "➖" ) , Product } ;
+
+Product = Operand , { "✖️" , Operand } ;
+
+Operand = IntegerLiteral
+        | BooleanLiteral
+        | Chain ;
+
+(* A name, a call, a field access or a member call, possibly chained:
+   x   f(1, 2)   c.center.x   p.d2()   make(1).moved(2).x *)
+Chain = ChainStart , { "." , Identifier , [ Arguments ] } ;
+
+ChainStart = Identifier , [ Arguments ] ;
+
+Arguments = "(" , [ Expression , { "," , Expression } ] , ")" ;
+
+(* The kept Stage 1 name for a single operand. *)
 Value = Identifier
       | IntegerLiteral
       | BooleanLiteral ;
+
+(* ===================== Types and modifiers ===================== *)
+
+(* In declarations and fields a structure name is a type only when it is
+   followed by the declared name: "🙂 Point p". *)
+DeclType = Type | Identifier ;
+
+AnyType = Type | Identifier ;      (* Identifier: the name of a structure *)
 
 Type = "🐒" | "🦍" | "boo!👻" ;
 
 Modifier = "🚫" | "🙂" | "☹️" ;
 
+(* ===================== Lexical rules ===================== *)
+
 BooleanLiteral = "👍" | "👎" ;
 
 IntegerLiteral = Digit , { Digit } ;
+
+StringLiteral = '"' , { StringChar | Escape } , '"' ;
+
+StringChar = ? any UTF-8 character except '"', "\", line feed and carriage return ? ;
+
+Escape = "\" , ( '"' | "\" | "n" | "t" ) ;
 
 Identifier = Letter , { Letter | Digit } ;
 
@@ -54,4 +139,11 @@ Letter = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J"
 
 Digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
 
+(* The variation selector U+FE0F after ⚙, 🛠, 🖨 and ✖ is optional:
+   "⚙️" = "⚙" , [ U+FE0F ] ;  "🛠️" = "🛠" , [ U+FE0F ] ;
+   "🖨️" = "🖨" , [ U+FE0F ] ;  "✖️" = "✖" , [ U+FE0F ] ;
+   "☹️" keeps its Stage 1 spelling (with U+FE0F). *)
+
 NewLine = "\n" | "\r\n" ;
+
+(* Spaces and tabs between tokens are ignored; blank lines are not allowed. *)

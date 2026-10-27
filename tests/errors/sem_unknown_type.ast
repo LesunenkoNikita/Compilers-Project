@@ -1,0 +1,5 @@
+ProgramNode @1:1
+  FunctionNode @1:1 (name: make, result: Shape, params: 0)
+    Body
+      ReturnNode @3:3
+        ValueNode @3:5 (INT: 1)

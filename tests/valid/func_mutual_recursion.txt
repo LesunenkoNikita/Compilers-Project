@@ -1,0 +1,21 @@
+⚙️ boo!👻 isEven(🐒 n)
+{
+  🙂 boo!👻 r => 👍
+  🤔 n ❎ 0
+  {
+    r => isOdd(n ➖ 1)
+  }
+  🔙 r
+}
+⚙️ boo!👻 isOdd(🐒 n)
+{
+  🙂 boo!👻 r => 👎
+  🤔 n ❎ 0
+  {
+    r => isEven(n ➖ 1)
+  }
+  🔙 r
+}
+🖨️(isEven(10))
+🖨️(isOdd(7))
+🖨️(isEven(3))

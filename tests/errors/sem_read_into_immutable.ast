@@ -1,0 +1,5 @@
+ProgramNode @1:1
+  DeclAndAssignNode @1:1 (modifier: immutable, mutable: false, type: i32, name: n)
+    ValueNode @1:11 (INT: 0)
+  ReadNode @2:1 (target: n)
+    ValueNode @2:3 (ID: n)

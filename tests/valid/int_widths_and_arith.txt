@@ -1,0 +1,12 @@
+🙂 🐒 small => 2147483647
+🙂 🦍 wide => small
+wide => wide ➕ 1
+🖨️(wide)
+🙂 🦍 product => wide ✖️ 4
+🖨️(product)
+🙂 🐒 back => wide ➖ 2147483000
+🖨️(back)
+🙂 🐒 neg => 0 ➖ 5
+🖨️(neg ✖️ 3)
+🖨️(small ✅ wide)
+🖨️(wide ✅ 2147483648)

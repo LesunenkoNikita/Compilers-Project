@@ -1,0 +1,2 @@
+ProgramNode @1:1
+  DeclarationNode @1:1 (modifier: immutable, mutable: false, type: i32, name: x)

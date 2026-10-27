@@ -1,0 +1,4 @@
+ProgramNode @1:1
+  DeclAndAssignNode @1:1 (modifier: mutable, mutable: true, type: bool, name: ok)
+    ValueNode @1:15 (BOOL: true)
+  ExitNode @2:1 (name: ok)

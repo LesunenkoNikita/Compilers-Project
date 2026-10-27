@@ -1,0 +1,10 @@
+🙂 🐒 total => add(add(1, 2), twice(3))
+🖨️(total)
+⚙️ 🐒 add(🐒 a, 🐒 b)
+{
+  🔙 a ➕ b
+}
+⚙️ 🐒 twice(🐒 x)
+{
+  🔙 add(x, x)
+}

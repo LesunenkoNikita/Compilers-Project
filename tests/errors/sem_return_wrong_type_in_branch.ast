@@ -1,0 +1,12 @@
+ProgramNode @1:1
+  FunctionNode @1:1 (name: pick, result: i32, params: 1)
+    ParamNode @1:11 (type: bool, name: first)
+    Body
+      IfNode @3:3
+        Condition
+          ValueNode @3:5 (ID: first)
+        Then
+          ReturnNode @5:5
+            ValueNode @5:7 (BOOL: true)
+      ReturnNode @7:3
+        ValueNode @7:5 (INT: 2)
