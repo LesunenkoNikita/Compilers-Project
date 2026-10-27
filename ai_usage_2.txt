@@ -1,0 +1,127 @@
+AI USAGE DISCLOSURE — Project Stage 2
+=====================================
+
+1. TOOLS
+--------
+- Claude Code (Anthropic), desktop app, model Claude Opus 5.5. It read my Stage 1 project and the
+  w07-project-stage2.pdf instructions in the project folder, looked at my practice repository
+  https://github.com/LesunenkoNikita/Compilers for reference, wrote the files, and ran the compiler and the
+  tests itself (llvmlite in my ~/lcd virtual environment, lli, llc and clang).
+- No other AI tools were used for Stage 2. (Stage 1 tools are listed in ai_usage.txt.)
+
+
+2. PROMPTS (as I sent them)
+---------------------------
+
+Prompt 1:
+
+stage 1 of the project is in compilers folder. Conversation for stage 1:
+https://claude.ai/share/33d174f3-5572-4bd3-b171-fc7e452f4e0b
+Mind what to fix in stage 2:
+Type overflow is not checked at any stage — an out-of-range i32 literal parses without an error
+Also another project which can be used for references, taking solutions from there but keeping in mind the
+syntax of the current project:
+https://github.com/LesunenkoNikita/Compilers
+Instructions for the stage 2 are in the compilers folder also.
+bypass file edit approving, auto approve every file change. don't send me the refactored code, only state with
+bulleted list what you implemented and changed. Don't remove the stage 1 functionality unless stated explicitly
+otherwise in the stage 2 instructions file. The tests for stage 2 must not only have .txt files with the code
+that will be tested, but also must have .expected files with expected output. For tests of input (read) there
+also must be .in files with the input for the program. Also don't forget to rewrite the test runner script file
+if needed, so it will test properly for stage 2(not only matching by exit value instead of ast and making .ll
+output files, but also creating .ast files for every valid program, considering .in files for inputs and passing
+them to the program etc.). After stage 2 implementation all the previous errors should be thrown as they were
+thrown in stage 1, unless stated explicitly otherwise in stage 2 instruction file. Strictly follow the pdf
+requirements.
+Now, the new syntax:
+Functions: ⚙️ - declaring a function, 🔙 - equivalent of 'return'. structure:
+⚙️ "type of returned value" "function name" "(typed parameters)"
+"{"
+     body of the function
+     🔙  "returned value"
+"}"
+Structures with fields: 🏰 - declaring a struct, declaration and assignment of fields is just the same as for
+variables but inside structs brackets. field access through chain just through ".": c.center.x
+Member functions: 🛠️ - declaring a function, the rest of member function syntax as in regular functions
+Read and print: 📖 - read, 🖨️ - print. for these after the symbol goes the printed value or the input value in
+parentheses.
+The rest of syntax details, those which are mandatory, you can consider from task 1 in pdf instructions file.
+finish grammar.ebnf for stage 2. As for README.md, make two copies: README_TASK1.md for new syntax features and
+the rules(follow recommendations in pdf file) and README.md(rewrite the old one after finishing all the tasks of
+stage 2) which will include both new syntax & rules and instructions for the full stage 2 project etc.
+For task 2, create task2compiler.py, copy the code of compiler.py into task2compiler.py and extend the code in
+task2compiler.py with new functionality according to task 2 instructions. Also create test.txt and test.expected
+in compilers folder(not in tests/) so I can test task 2.
+For task 3, rewrite compiler.py with task2compiler.py code after finishing task 2, then in compiler.py implement
+task 3.
+For task 4 - test cases, just follow the instructions in the pdf file.
+skip the ai usage file creation for now, it will be asked to be done after you complete everything else in
+stage 2.
+
+Prompt 2 (a correction after reading the first result):
+
+🔙 must be the last line of a function body and can't appear anywhere else. I mean 🔙 is an equivalent of
+return. example: 🔙 a - the same as return a; in python
+
+Prompt 3:
+
+now create ai usage file like instructed in pdf file, you can skip last prompt and answer of the error , that was
+my fault , i didn't run lcd activate
+
+(Between prompt 2 and prompt 3 I ran the tests on my Ubuntu machine without activating the ~/lcd virtual
+environment, so every test failed with "No module named 'llvmlite'". That was my mistake, not a bug in the
+logic. The only code it led to: compiler.py now imports llvmlite lazily and prints a one-line compilation
+error instead of a traceback when it is missing, and run_tests.py falls back to ~/lcd/bin/python3 and also finds
+versioned LLVM tools such as lli-18. The README got Ubuntu setup steps.)
+
+
+3. WHAT I TOOK AS IT WAS, WHAT I CHANGED AND WHY
+-----------------------------------------------
+
+Language design (my part): the emojis and the shape of the new constructs are mine — ⚙️ for functions, 🔙 as
+return, 🏰 for structures with fields declared like variables, 🛠️ for member functions, 📖 and 🖨️ with the value
+in parentheses, field chains with ".". The Stage 1 syntax is unchanged.
+
+Decisions the AI made that I accepted as they were:
+- arithmetic ➕ ➖ ✖️ (the PDF needs arithmetic in code generation, and Stage 1 had none; ASCII "-" stays a
+  lexical error so the Stage 1 test still passes);
+- an object is created with Name(values...), one value per field that has no "=> default";
+- 📖(target) is a statement that reads into a mutable integer variable or field;
+- 🚪 prints "Program exit with result V" and exits with V as the exit status;
+- an i64 stored into an i32 is allowed but checked at run time (so the Stage 1 program full_program, which assigns
+  an i64 constant to an i32 variable, stays valid as the PDF requires);
+- arithmetic overflow is checked at run time; integer literals are range-checked at compile time (the fix for the
+  Stage 1 review comment about out-of-range i32 literals).
+
+grammar.ebnf — taken as generated, then changed after prompt 2: the first version allowed 🔙 only as the last
+line of a function body. That was not what I meant: 🔙 is return, so it is now an ordinary statement inside
+function bodies at any depth.
+
+README_TASK1.md and README.md — taken as generated (examples per feature, 21 rules, each with a test that follows
+it and a test that breaks it, build/run/test instructions). Changed after prompt 2: the 🔙 explanation, the
+factorial example (now with an early return) and rule 14 (every path must leave the function with 🔙 or 🚪).
+
+task2compiler.py (Task 2, lexer + parser + --ast) — taken as generated: new tokens in the keyword automaton,
+string literals, one parser method per grammar rule, new AST nodes. Changed after prompt 2: 🔙 is parsed as a
+statement anywhere inside a function body; outside a function it is a syntax error.
+
+compiler.py (Task 3, semantic pass + LLVM IR through the llvmlite builder) — taken as generated. Changed after
+prompt 2: the semantic pass checks every 🔙 against the result type and checks that every path through a function
+ends in 🔙 or 🚪; code generation emits a "ret" for each 🔙 and puts the code after it into a dead block. Changed
+after my venv mistake: the lazy llvmlite import described above.
+
+run_tests.py — taken as generated: compares --ast with NAME.ast (creates it when missing), compiles to
+build/NAME.ll, runs it with lli (or llc + clang with --native) using NAME.in as standard input, compares with
+NAME.expected; for invalid programs it compares the error line and checks that no .ll file is written. Changed
+later: the Python / LLVM tool discovery described above.
+
+Tests — the Stage 1 tests were kept: their old AST .expected files became .ast files and got new .expected files
+with the program output. The Stage 1 test literal_beyond_i32_still_parses moved to
+tests/errors/sem_literal_beyond_i32_still_parses, because the overflow check now rejects it (it still parses, its
+.ast is the Stage 1 AST). New tests were generated; after prompt 2 syn_statement_after_return was removed (it is
+legal now), syn_function_without_return became sem_function_without_return, and func_early_return,
+sem_return_missing_on_one_path and sem_return_wrong_type_in_branch were added. Result: 49 valid (all end to end,
+two with .in input) and 96 invalid programs, all passing with lli and with llc + clang.
+
+test.txt / test.expected — taken as generated: a program using every new construct and its AST from
+task2compiler.py --ast.

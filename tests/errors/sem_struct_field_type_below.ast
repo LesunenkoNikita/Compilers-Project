@@ -1,0 +1,5 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Line, fields: 1, member functions: 0)
+    FieldNode @3:3 (modifier: mutable, mutable: true, type: Dot, name: start, default: false)
+  StructNode @5:1 (name: Dot, fields: 1, member functions: 0)
+    FieldNode @7:3 (modifier: mutable, mutable: true, type: i32, name: x, default: false)

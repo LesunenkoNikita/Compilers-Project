@@ -1,0 +1,39 @@
+🏰 Vec
+{
+  🙂 🐒 x
+  🙂 🐒 y
+  🛠️ Vec plus(Vec o)
+  {
+    🔙 Vec(x ➕ o.x, y ➕ o.y)
+  }
+  🛠️ 🐒 len2()
+  {
+    🔙 dot(Vec(x, y))
+  }
+  🛠️ 🐒 dot(Vec o)
+  {
+    🔙 x ✖️ o.x ➕ y ✖️ o.y
+  }
+  🛠️ 🐒 scale(🐒 k)
+  {
+    x => x ✖️ k
+    y => y ✖️ k
+    🔙 k
+  }
+}
+🏰 Segment
+{
+  🙂 Vec from
+  🙂 Vec to
+  🛠️ 🐒 stretch(🐒 k)
+  {
+    🔙 to.scale(k)
+  }
+}
+☹️ Vec a => Vec(1, 2)
+🖨️(a.plus(Vec(3, 4)).plus(a).len2())
+🙂 Segment s => Segment(a, Vec(3, 4))
+s.stretch(2)
+🖨️(s)
+s.from.scale(10)
+🖨️(s.from.len2())

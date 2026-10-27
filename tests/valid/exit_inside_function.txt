@@ -1,0 +1,12 @@
+⚙️ 🐒 check(🐒 v)
+{
+  🤔 v ✅ 0
+  {
+    🖨️("zero, leaving")
+    🚪 v
+  }
+  🔙 v
+}
+🖨️(check(3))
+🖨️(check(0))
+🖨️("never printed")

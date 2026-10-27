@@ -1,0 +1,24 @@
+ProgramNode @1:1
+  DeclAndAssignNode @1:1 (modifier: constant, mutable: false, type: i32, name: base)
+    ValueNode @1:13 (INT: 100)
+  DeclAndAssignNode @2:1 (modifier: mutable, mutable: true, type: i32, name: counter)
+    ValueNode @2:16 (INT: 0)
+  FunctionNode @3:1 (name: bump, result: i32, params: 1)
+    ParamNode @3:11 (type: i32, name: step)
+    Body
+      AssignmentNode @5:3 (name: counter)
+        BinOpNode @5:22 (op: +)
+          ValueNode @5:14 (ID: counter)
+          ValueNode @5:24 (ID: step)
+      ReturnNode @6:3
+        BinOpNode @6:13 (op: +)
+          ValueNode @6:5 (ID: counter)
+          ValueNode @6:15 (ID: base)
+  PrintNode @8:1
+    CallNode @8:4 (name: bump, args: 1)
+      ValueNode @8:9 (INT: 5)
+  PrintNode @9:1
+    CallNode @9:4 (name: bump, args: 1)
+      ValueNode @9:9 (INT: 7)
+  PrintNode @10:1
+    ValueNode @10:4 (ID: counter)

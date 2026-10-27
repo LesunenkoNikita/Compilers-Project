@@ -1,0 +1,11 @@
+ProgramNode @1:1
+  DeclAndAssignNode @1:1 (modifier: mutable, mutable: true, type: i32, name: x)
+    ValueNode @1:14 (INT: 5)
+  IfNode @2:2
+    Condition
+      BinOpNode @2:7 (op: ==)
+        ValueNode @2:5 (ID: x)
+        ValueNode @2:11 (INT: 5)
+    Then
+      AssignmentNode @4:3 (name: x)
+        ValueNode @4:8 (INT: 6)

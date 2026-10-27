@@ -1,0 +1,1 @@
+compilation error: line 2:12: Cannot access field 'x' of a value of type i32

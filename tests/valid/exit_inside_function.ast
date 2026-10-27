@@ -1,0 +1,23 @@
+ProgramNode @1:1
+  FunctionNode @1:1 (name: check, result: i32, params: 1)
+    ParamNode @1:12 (type: i32, name: v)
+    Body
+      IfNode @3:3
+        Condition
+          BinOpNode @3:7 (op: ==)
+            ValueNode @3:5 (ID: v)
+            ValueNode @3:9 (INT: 0)
+        Then
+          PrintNode @5:5
+            StringNode @5:8 (text: "zero, leaving")
+          ExitNode @6:5 (name: v)
+      ReturnNode @8:3
+        ValueNode @8:5 (ID: v)
+  PrintNode @10:1
+    CallNode @10:4 (name: check, args: 1)
+      ValueNode @10:10 (INT: 3)
+  PrintNode @11:1
+    CallNode @11:4 (name: check, args: 1)
+      ValueNode @11:10 (INT: 0)
+  PrintNode @12:1
+    StringNode @12:4 (text: "never printed")

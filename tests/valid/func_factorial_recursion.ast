@@ -1,0 +1,28 @@
+ProgramNode @1:1
+  FunctionNode @1:1 (name: fact, result: i64, params: 1)
+    ParamNode @1:11 (type: i64, name: n)
+    Body
+      DeclAndAssignNode @3:3 (modifier: mutable, mutable: true, type: i64, name: r)
+        ValueNode @3:12 (INT: 1)
+      IfNode @4:3
+        Condition
+          BinOpNode @4:7 (op: !=)
+            ValueNode @4:5 (ID: n)
+            ValueNode @4:9 (INT: 0)
+        Then
+          AssignmentNode @6:5 (name: r)
+            BinOpNode @6:12 (op: *)
+              ValueNode @6:10 (ID: n)
+              CallNode @6:15 (name: fact, args: 1)
+                BinOpNode @6:22 (op: -)
+                  ValueNode @6:20 (ID: n)
+                  ValueNode @6:24 (INT: 1)
+      ReturnNode @8:3
+        ValueNode @8:5 (ID: r)
+  PrintNode @10:1
+    CallNode @10:4 (name: fact, args: 1)
+      ValueNode @10:9 (INT: 20)
+  DeclAndAssignNode @11:1 (modifier: mutable, mutable: true, type: i64, name: big)
+    CallNode @11:12 (name: fact, args: 1)
+      ValueNode @11:17 (INT: 15)
+  ExitNode @12:1 (name: big)

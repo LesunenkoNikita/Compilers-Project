@@ -1,0 +1,25 @@
+ProgramNode @1:1
+  DeclAndAssignNode @1:1 (modifier: mutable, mutable: true, type: i32, name: total)
+    CallNode @1:14 (name: add, args: 2)
+      CallNode @1:18 (name: add, args: 2)
+        ValueNode @1:22 (INT: 1)
+        ValueNode @1:25 (INT: 2)
+      CallNode @1:29 (name: twice, args: 1)
+        ValueNode @1:35 (INT: 3)
+  PrintNode @2:1
+    ValueNode @2:4 (ID: total)
+  FunctionNode @3:1 (name: add, result: i32, params: 2)
+    ParamNode @3:10 (type: i32, name: a)
+    ParamNode @3:15 (type: i32, name: b)
+    Body
+      ReturnNode @5:3
+        BinOpNode @5:7 (op: +)
+          ValueNode @5:5 (ID: a)
+          ValueNode @5:9 (ID: b)
+  FunctionNode @7:1 (name: twice, result: i32, params: 1)
+    ParamNode @7:12 (type: i32, name: x)
+    Body
+      ReturnNode @9:3
+        CallNode @9:5 (name: add, args: 2)
+          ValueNode @9:9 (ID: x)
+          ValueNode @9:12 (ID: x)

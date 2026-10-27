@@ -1,0 +1,3 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Config, fields: 1, member functions: 0)
+    FieldNode @3:3 (modifier: constant, mutable: false, type: i32, name: size, default: false)

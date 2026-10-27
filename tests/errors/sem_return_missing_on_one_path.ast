@@ -1,0 +1,15 @@
+ProgramNode @1:1
+  FunctionNode @1:1 (name: abs, result: i32, params: 1)
+    ParamNode @1:10 (type: i32, name: n)
+    Body
+      IfNode @3:3
+        Condition
+          BinOpNode @3:7 (op: ==)
+            ValueNode @3:5 (ID: n)
+            ValueNode @3:9 (INT: 0)
+        Then
+          ReturnNode @5:5
+            ValueNode @5:7 (INT: 0)
+        Else
+          PrintNode @9:5
+            ValueNode @9:8 (ID: n)

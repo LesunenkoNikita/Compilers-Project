@@ -1,0 +1,1 @@
+compilation error: line 1:10: Cannot assign a value of type bool to 'x' of type i32

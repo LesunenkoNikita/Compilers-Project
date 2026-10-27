@@ -1,0 +1,4 @@
+🙂 🦍 big => 5000000000
+🙂 🐒 small => 1
+small => big
+🖨️(small)

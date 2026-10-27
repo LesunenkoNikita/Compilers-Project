@@ -1,0 +1,26 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Flag, fields: 2, member functions: 0)
+    FieldNode @3:3 (modifier: mutable, mutable: true, type: bool, name: on, default: false)
+    FieldNode @4:3 (modifier: mutable, mutable: true, type: i64, name: big, default: false)
+  PrintNode @6:1
+    StringNode @6:4 (text: "Hello, \"emoji\" world!")
+  PrintNode @7:1
+    StringNode @7:4 (text: "tab:\tend")
+  PrintNode @8:1
+    ValueNode @8:4 (INT: 42)
+  PrintNode @9:1
+    ValueNode @9:4 (INT: 9223372036854775807)
+  PrintNode @10:1
+    ValueNode @10:4 (BOOL: true)
+  PrintNode @11:1
+    BinOpNode @11:6 (op: ==)
+      ValueNode @11:4 (INT: 1)
+      ValueNode @11:8 (INT: 2)
+  DeclAndAssignNode @12:1 (modifier: mutable, mutable: true, type: Flag, name: f)
+    CallNode @12:13 (name: Flag, args: 2)
+      ValueNode @12:18 (BOOL: false)
+      ValueNode @12:21 (INT: 5000000000)
+  PrintNode @13:1
+    ValueNode @13:4 (ID: f)
+  PrintNode @14:1
+    StringNode @14:4 (text: "100% done")

@@ -1,0 +1,1 @@
+compilation error: line 24:4: Cannot call mutating member function 'moveA' on 'pr': 'pr' is immutable

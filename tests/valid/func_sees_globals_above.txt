@@ -1,0 +1,10 @@
+🚫 🐒 base => 100
+🙂 🐒 counter => 0
+⚙️ 🐒 bump(🐒 step)
+{
+  counter => counter ➕ step
+  🔙 counter ➕ base
+}
+🖨️(bump(5))
+🖨️(bump(7))
+🖨️(counter)
