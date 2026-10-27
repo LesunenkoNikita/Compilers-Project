@@ -1,0 +1,16 @@
+🚫 🦍 limit => 1000
+🙂 🐒 counter => 0
+☹️ boo!👻 debug => 👎
+🤔 counter ✅ 0
+{
+  counter => 1
+  🤔 debug
+  {
+    🚪 counter
+  }
+}
+🤨
+{
+  counter => limit
+}
+🚪 counter
