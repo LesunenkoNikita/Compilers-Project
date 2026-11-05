@@ -1,0 +1,164 @@
+AI USAGE DISCLOSURE — Project Stage 3
+=====================================
+
+1. TOOLS
+--------
+- Claude Code (Anthropic), desktop app, model Claude Opus 5.5. It read my Stage 2 project and the
+  w10-project-stage3.pdf instructions in the project folder, wrote the files, and ran the compiler, the tests
+  and the program itself (llvmlite in my ~/lcd virtual environment, lli, llc and clang).
+- My practice repository https://github.com/LesunenkoNikita/Compilers was named in my first prompt as a possible
+  reference. Stage 3 code was not copied from it.
+- No other AI tools were used for Stage 3. (Earlier stages are covered by ai_usage.txt and ai_usage_2.txt.)
+
+
+2. PROMPTS (as I sent them)
+---------------------------
+
+Prompt 1:
+
+stage 2 of the project is in compilers folder.
+Also another project which can be used for references, taking solutions from there but keeping in mind the syntax
+of the current project:
+https://github.com/LesunenkoNikita/Compilers
+Instructions for the stage 3 are in the compilers folder also.
+bypass file edit approving, auto approve every file change. don't send me the refactored code, only state with
+bulleted list what you implemented and changed. Don't remove the stage 2 functionality unless stated explicitly
+otherwise in the stage 3 instructions file. The tests for stage 3 must not only have .txt files with the code that
+will be tested, but also must have .expected files with expected output. For tests of input (read) there also must
+be .in files with the input for the program. Also don't forget to rewrite the test runner script file if needed, so
+it will test properly for stage 3. After stage 3 implementation all the previous errors should be thrown as they
+were thrown in stage 2, unless stated explicitly otherwise in stage 3 instruction file. Strictly follow the pdf
+requirements.
+
+Task 1: Feature - encapsulation. public - 🔓, private - 🔒. modifier can be put before each field or member
+function. By default all fields and member functions are public, if the modifier is not stated. Private fields can
+be set in constructor. don't forget to make changes to README.md and grammar.ebnf and create tests. For now complete
+only task 1, we'll move on to task 2 and so on later.
+
+Prompt 2:
+
+now moving on to task 2, complete task 2, don't forget about README.md and tests
+
+Prompt 3:
+
+explain this Locals are renamed like add$1$a. Source names can't contain $, so they can't collide.
+also remind me what is --native. and redo run_tests.py so without a flag --optimize it runs tests like before and
+with --optimize it runs tests with optimization. like python3 --optimize run_tests.py. also state this in readme
+
+Prompt 4:
+
+when did you implement --native?
+
+Prompt 5:
+
+as for task 3, give me some examples of which programs i could build. also explain what should be in
+programs/NAME.txt, the code of the program should be there?
+
+Prompt 6:
+
+a safe with a lock would be fine.
+
+Prompt 7:
+
+how many coins are there to put in a safe, explain the program more thoroughly. and basically you always chose a
+code so you always know it?
+
+Prompt 8:
+
+each time a program is ran, you chose the code again? why do we need serial number? explain what the program is in
+more details
+
+Prompt 9:
+
+let's rework the game a bit. make it for two players. first player enters a 4-digit code. the safe is created.
+another player then tries to guess it. the player who guesses has 10 tries. when the player puts in a guess, let's
+say 1234, and there is number 3, but not on a third position, the game says that digit 3 is in the code, but not at
+position 3. when it's in right position, the game says it. when there is no such digit in the code, the game
+doesn't state this, just states about digits that are in the safe's code. if there were no digits present in the
+code, the game says that digits of a guess are not present in the code. there would be no coins count, no put in or
+out coins etc, when the player guesses the code correctly, the game displays a message that the safe has been
+opened and a player takes 9999 coins with them. rework the program and README.md etc., then let me know how to run
+a program not only with run_tests.py but also by itself
+
+Prompt 10:
+
+Against code 1234, guess 1111 gives one "at position" line and three "not at position" lines. - wrong, should print
+just that 1 is at position 1 and that's all, otherwise would be too easy. and also explain why would we need
+division and then why do we need to count from 0000 until the value matches the number
+
+Prompt 11:
+
+lets do this way:
+Read the four digits as separate entries, like 1 2 3 4. This needs no compiler change, but you wouldn't be able to
+type 1234 as you asked.
+the player who creates a code will be just asked to put in each digit of the safe in order with four prompts
+
+Prompt 12:
+
+so if player 2 types one line the game still does 1000 checks?
+
+Prompt 13:
+
+so does player 2 need spaces between digits? and how does read() reads not a line, but 4 digits in order?
+
+Prompt 14:
+
+okay, now add ai_usage_3.txt
+
+
+3. WHAT I TOOK AS IT WAS, WHAT I CHANGED AND WHY
+-----------------------------------------------
+
+Task 1, encapsulation (compiler.py, grammar.ebnf, README.md, tests) — my part: choosing this feature from the PDF
+menu, the 🔓 and 🔒 emojis, public as the default, and private fields being settable in the constructor. Taken as
+generated: the lexer token, the parser rule, the semantic checks, the error messages that name the member, the 20
+encapsulation_ tests, the README rules, the two example programs and the IR excerpt. One decision the AI made that I
+accepted: 🖨️ of an object hides private fields unless it runs inside a member function of that structure, because
+otherwise a private value could be read from outside by printing the object. I did not change this code.
+
+Task 2, optimizer (compiler.py, README.md, tests/optimizer) — taken as generated: the --optimize flag and the three
+transformations. Decisions the AI made that I accepted:
+- an unused variable stays if its expression can stop the program with an overflow or range error, because removing
+  it could change what the program prints; an expression that is exactly a call becomes a call statement;
+- unused functions are found by what the top-level code reaches, and this also removes unused member functions;
+- only plain functions with one 🔙 as the last statement are inlined; recursive functions, early returns and member
+  functions are left alone, and so is a call that cannot move without changing the order of effects;
+- inlined locals are named like add$1$a, because $ cannot appear in a source name.
+
+run_tests.py — the first version generated for Task 2 ran every test twice, without and with --optimize. I changed
+that with prompt 3: without the flag it runs tests as before, and only "python3 run_tests.py --optimize" uses the
+optimizer, because I wanted to choose the mode myself. For Task 3 the AI added the programs/ sessions.
+
+Task 3, the real program (programs/safe.txt, its sessions, README.md) — this part changed the most, and the changes
+came from me:
+- From the options the AI listed, I chose a safe with a lock (prompt 6). The first version let one person choose the
+  code and then store coins through menus.
+- That made no sense as a game: one person always knows the code, and the coins came from nowhere. So I redesigned it
+  (prompt 9): two players, a 4-digit code, 10 tries, hints about digits and positions, no coins except the 9999 prize.
+- The first hint rule gave too much away for repeated digits, so I corrected it (prompt 10): against 1234, the guess
+  1111 must print only that 1 is at position 1. Now each digit of the code gives at most one hint.
+- The next version split a typed number into digits by counting up from 0000, because the language has no division.
+  I replaced that with separate entries (prompt 11): Player 1 gets four prompts, one per digit, and Player 2 types
+  the digits separated by spaces. That removed the counting search from the program.
+- The AI decided on these details and I accepted them: 40 empty lines to hide the code, re-asking after an invalid
+  entry without using a try, and the session names safe and safe_locked.
+
+Compiler change for the game — 🖨️ could print only one value per line, so a hint such as "Digit 3 is in the code, but
+not at position 3" was impossible. To support my hint messages, the AI extended 🖨️ to several comma-separated values
+on one line, with tests, grammar and README updates. Existing programs print the same.
+
+Tests — taken as generated. The expected output of the tests was written before running them, and the expected output
+of the game sessions came from a separate Python version of the hint rules, not from the compiler. Some first
+attempts had wrong line or column numbers in the expected files, and those files were corrected.
+
+
+4. WHAT I UNDERSTOOD
+--------------------
+
+Encapsulation is only a compile-time check. Lexer, parser and semantic pass do most of the job, lexer and parser state 
+if a member is private, semantic pass compares the structure of the member with the structure whose member function 
+is checked. For example, the viewer() has the method's structure, and if the private field's structure and method's 
+structure are not the same, it reports an error with the member's name. In the generated IR a private field is a 
+getelementptr, so privacy costs nothing at run time.
+
+The optimizer works on the checked tree, after the semantic pass and before code generation. 

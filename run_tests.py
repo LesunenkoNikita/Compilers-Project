@@ -13,6 +13,9 @@ tests/optimizer/NAME.txt  a program that shows a transformation of --optimize:
     NAME.expected  exactly what the program prints, with and without --optimize
     NAME.in        optional: the program's standard input
 
+programs/NAME.txt  a real program, with its recorded sessions next to it:
+    NAME.in + NAME.expected, NAME_x.in + NAME_x.expected   what the user types and the exact output
+
 Without --optimize the compiler runs without the optimizer. With --optimize every test compiles through it
 and must give the same result as without it.
 
@@ -117,19 +120,28 @@ class Runner:
                 return "the tree after --optimize differs from NAME.ast"
         return self.check_run(base, os.path.join(BUILD, "optimizer", name + ".ll"))
 
-    def check_run(self, base, ll_path):
+    def check_session(self, base, name):
+        programs = [f[:-4] for f in os.listdir(os.path.dirname(base)) if f.endswith(".txt")]
+        program = next((p for p in programs if name == p or name.startswith(p + "_")), None)
+        if program is None:
+            return "no program in programs/ has this session's name"
+        source = os.path.join(os.path.dirname(base), program)
+        return self.check_run(source, os.path.join(BUILD, "programs", name + ".ll"), base)
+
+    def check_run(self, base, ll_path, session=None):
+        session = session or base  # the files of the run: NAME.in and NAME.expected
         p = compiler(*self.flags, base + ".txt", ll_path)
         if p.returncode != 0 or p.stderr:
             return f"compilation failed (exit code {p.returncode}): {text(p.stderr)}"
         if not os.path.exists(ll_path):
             return "the compiler wrote no .ll file"
-        stdin = read(base + ".in") if os.path.exists(base + ".in") else b""
+        stdin = read(session + ".in") if os.path.exists(session + ".in") else b""
         run, problem = self.execute(ll_path, stdin)
         if problem:
             return problem
         if run.returncode < 0:
             return f"the program crashed (signal {-run.returncode})"
-        expected = read(base + ".expected")
+        expected = read(session + ".expected")
         actual = run.stdout + run.stderr
         if actual != expected:
             return f"output differs\n      expected: {text(expected)!r}\n      got:      {text(actual)!r}"
@@ -161,19 +173,22 @@ def main(argv):
     optimize = "--optimize" in argv
     runner = Runner(native, update_ast, optimize)
     failed, total = [], 0
-    for folder, checker in (("valid", runner.check_valid), ("errors", runner.check_error),
-                            ("optimizer", runner.check_optimizer)):
-        d = os.path.join(ROOT, "tests", folder)
-        os.makedirs(os.path.join(BUILD, folder), exist_ok=True)
+    for folder, checker, ext in (("tests/valid", runner.check_valid, ".txt"),
+                                 ("tests/errors", runner.check_error, ".txt"),
+                                 ("tests/optimizer", runner.check_optimizer, ".txt"),
+                                 ("programs", runner.check_session, ".in")):
+        d = os.path.join(ROOT, folder)
+        short = os.path.basename(folder)
+        os.makedirs(os.path.join(BUILD, short), exist_ok=True)
         for file in sorted(os.listdir(d)):
-            if not file.endswith(".txt"):
+            if not file.endswith(ext):
                 continue
-            name = file[:-4]
+            name = file[:-len(ext)]
             if filters and not any(f in name for f in filters):
                 continue
             total += 1
             base = os.path.join(d, name)
-            label = f"{folder}/{name}"
+            label = f"{short}/{name}"
             if not os.path.exists(base + ".expected"):
                 problem = "missing NAME.expected"
             else:

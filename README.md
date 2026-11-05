@@ -1,4 +1,4 @@
-# Emoji language — Stage 3 (encapsulation, optimizer)
+# Emoji language — Stage 3 (encapsulation, optimizer, a real program)
 
 A small statically-typed language written with emojis. The compiler is a hand-written byte-level lexer (a state
 machine), a recursive-descent parser (one function per grammar rule), a semantic pass with a symbol table, and an
@@ -177,7 +177,7 @@ functions of the structure are used by plain name (`x`, `d2()`). A member functi
 📖(p.x)
 ```
 
-`🖨️(value)` prints an integer, a bool, a string literal or an object. `📖(target)` reads one integer from standard
+`🖨️(value, …)` prints integers, bools, string literals and objects on one line. `📖(target)` reads one integer from standard
 input into a variable or a field chain.
 
 ### Arithmetic
@@ -267,11 +267,13 @@ input into a variable or a field chain.
 
 ### Input and output
 
-19. **print.** `🖨️(v)` prints one value and then a newline: an integer in decimal (`%d` for i32, `%lld` for i64),
+19. **print.** `🖨️(v, …)` prints its values left to right with nothing between them, and then one newline:
+    `🖨️("Digit ", d, " is at position ", p)`. Each value is printed before the next one is computed. An integer is printed in decimal (`%d` for i32, `%lld` for i64),
     a bool as `true` / `false`, a string literal as written (escapes decoded), an object as its structure name and
     its fields in declaration order: `Circle{center: Point{x: 1, y: 2}, radius: 5}` — nested objects inline, one
-    newline after the whole object; private fields are left out by Stage 3 rule 5. — follows: `print_every_kind`, `struct_field_chain`; breaks:
-    `syn_string_outside_print`, `syn_print_without_parens`.
+    newline after the whole object; private fields are left out by Stage 3 rule 5. — follows: `print_every_kind`, `print_several_values`, `struct_field_chain`; breaks:
+    `syn_string_outside_print`, `syn_print_without_parens`, `syn_print_trailing_comma`, `syn_print_missing_comma`,
+    `sem_print_unknown_item`.
 20. **read.** `📖(target)` reads one integer from standard input into a mutable integer variable or field chain
     (rule 8). Input that is not an integer stops the program with a runtime error. — follows: `read_point`,
     `read_i32_and_i64`; breaks: `sem_read_into_bool`, `sem_read_into_immutable`, `syn_read_into_call`.
@@ -440,6 +442,7 @@ body may hold anything else, including `🤔` blocks and `🚪`.
 - a recursive function, directly or through other functions;
 - a body with a `🔙` inside a block, such as an early return in an `🤔`: there is no single value to put at the call;
 - a member function: it needs its object;
+- a call in a later `🖨️` value, because the earlier values have already printed (`inline_print_item_order`);
 - a call that cannot move. The body runs before the statement that held the call, so everything evaluated earlier in
   that statement must not notice. In `counter ➕ bump()` the global `counter` would be read after `bump` changed it.
   In `show(1) ➕ second()` the prints would swap. In `a ✖️ b ➕ f()` the `✖️` could overflow first. Literals, locals and
@@ -489,6 +492,57 @@ entry:
 
 The overflow check moved with the body and still reports the position inside `add`. The module goes from 61 to 52
 lines.
+
+## The real program: crack the safe
+
+[`programs/safe.txt`](programs/safe.txt) is a game for two players at one keyboard. Player 1 enters the 4 digits of the code,
+one prompt per digit, and the safe is created with them; 40 empty lines then push the code off the screen. Player 2 has 10 tries to guess it,
+typing 4 digits with spaces between them, like `1 2 3 4`.
+After each wrong guess the game goes through the positions from 1 to 4 and gives a hint only for digits that are in
+the code: `Digit 7 is at position 1` when the digit is in the right place, and
+`Digit 3 is in the code, but not at position 3` when it is somewhere else. If no hint applies, it says `The digits of this guess are not in the code.` A correct guess opens the safe and Player 2 takes 9999 coins.
+After 10 wrong guesses the safe stays closed.
+
+Encapsulation carries the program: `Safe` keeps the code, the tries and the coins in `🔒` fields, so Player 2's only
+way in is the public `tryGuess`. The code goes in through the constructor (`Safe(Digits(…))`), which is how a private
+field is set, and private member functions such as `hintAt` build the hints. `Digits` keeps its digits private too,
+behind `at` and `same`. Plain functions read the input and run the game.
+
+Details of the rules:
+
+- The digits are separate entries because the language has no division to split `1234` into digits. Typing `1234`
+  counts as one entry, so it is rejected once the other three entries are in.
+- For Player 1, an entry that is not a digit from 0 to 9 asks for the same digit again. For Player 2, it asks for the
+  whole guess again and does not use up a try.
+- Each digit of the code gives at most one hint, and digits in the right position claim theirs first. Against the
+  code 1234, the guess 1111 prints only `Digit 1 is at position 1`. Against the code 0042, the guess 4200 gives four
+  hints, because both zeros of the code are used.
+- The language has no loops, so the game repeats by recursion.
+
+### Running the game by itself
+
+Compile it, then build a native binary with `llc` and `clang` and play:
+
+```
+source ~/lcd/bin/activate
+mkdir -p build
+python3 compiler.py --optimize programs/safe.txt build/safe.ll
+llc -filetype=obj -relocation-model=pic build/safe.ll -o build/safe.o
+clang build/safe.o -o build/safe
+./build/safe
+```
+
+`--optimize` is optional. `lli build/safe.ll` also runs the game without building a binary.
+
+The two recorded sessions, each compared with its `.expected` file (no output from `diff` means they match):
+
+```
+./build/safe < programs/safe.in | diff - programs/safe.expected
+./build/safe < programs/safe_locked.in | diff - programs/safe_locked.expected
+```
+
+In `safe.in` Player 2 opens the safe on the sixth guess. In `safe_locked.in` all 10 guesses are wrong. `run_tests.py`
+runs both sessions as well.
 
 ## Build and run
 
@@ -599,14 +653,18 @@ folders through it, against the same expected files, so passing in both modes sh
 output and no error. `--optimize` goes after `run_tests.py`: placed before it, the flag would go to `python3`.
 `--native`, `--optimize` and name filters can be combined.
 
+- `programs/NAME.txt` — a real program. Each `NAME.in` or `NAME_x.in` next to it is a recorded session: what the
+  user types, with the exact output, prompts included, in the `.expected` file of the same name.
+
 The script prints `ok` / `FAIL` for every test, lists the failed ones at the end and exits non-zero if any fails.
 Generated files go to `build/`, which is not committed.
 
 | Folder | Count | Content |
 |--------|-------|---------|
-| `tests/valid` | 56 | the 30 valid Stage 1 programs (now also compiled and run), 19 Stage 2 programs and 7 `encapsulation_` programs; 3 of them read input (`read_point`, `read_i32_and_i64`, `encapsulation_read_into_private`) |
-| `tests/errors` | 109 | `lex_` lexical, `syn_` syntax, `sem_` semantic errors: 40 from Stage 1 (with the moved literal test), 56 from Stage 2, and 13 `encapsulation_` errors |
-| `tests/optimizer` | 12 | `unused_var_` (4), `unused_fn_` (2) and `inline_` (6) programs with the tree after `--optimize` |
+| `tests/valid` | 57 | the 30 valid Stage 1 programs (now also compiled and run), 19 Stage 2 programs, 7 `encapsulation_` programs and `print_several_values`; 3 of them read input (`read_point`, `read_i32_and_i64`, `encapsulation_read_into_private`) |
+| `tests/errors` | 112 | `lex_` lexical, `syn_` syntax, `sem_` semantic errors: 40 from Stage 1 (with the moved literal test), 56 from Stage 2, 13 `encapsulation_` errors and 3 for `🖨️` with several values |
+| `tests/optimizer` | 13 | `unused_var_` (4), `unused_fn_` (2) and `inline_` (7) programs with the tree after `--optimize` |
+| `programs` | 2 | the recorded sessions of `programs/safe.txt`: `safe` and `safe_locked` |
 
 The Stage 1 test `literal_beyond_i32_still_parses` is now `tests/errors/sem_literal_beyond_i32_still_parses`: it
 still parses (its `.ast` is the Stage 1 AST) and the semantic pass rejects the out-of-range i32 literal.
@@ -618,4 +676,5 @@ compiler.py        lexer, parser, AST, semantic pass, optimizer, LLVM IR generat
 grammar.ebnf       the grammar
 run_tests.py       test runner
 tests/             valid/, errors/ and optimizer/ test cases
+programs/          the real program and its recorded sessions
 ```

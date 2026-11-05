@@ -386,12 +386,12 @@ class ReturnNode(StmtNode):
 
 
 class PrintNode(StmtNode):
-    def __init__(self, print_tok, expr):
+    def __init__(self, print_tok, items):
         super().__init__(print_tok.line, print_tok.col)
-        self.expr = expr  # an expression or a StringNode
+        self.items = items  # expressions and StringNodes, printed left to right on one line
 
     def children(self):
-        return [self.expr]
+        return self.items
 
 
 class ReadNode(StmtNode):
@@ -798,13 +798,18 @@ class Parser:
     def parse_print(self):
         print_tok = self.eat(TokenType.PRINT)
         self.eat(TokenType.LPAREN)
-        if self.peek().kind == TokenType.STRING:
-            expr = StringNode(self.eat(TokenType.STRING))
-        else:
-            expr = self.parse_expression()
+        items = [self.parse_print_item()]
+        while self.peek().kind == TokenType.COMMA:
+            self.eat(TokenType.COMMA)
+            items.append(self.parse_print_item())
         self.eat(TokenType.RPAREN)
         self.eat(TokenType.NEWLINE)
-        return PrintNode(print_tok, expr)
+        return PrintNode(print_tok, items)
+
+    def parse_print_item(self):
+        if self.peek().kind == TokenType.STRING:
+            return StringNode(self.eat(TokenType.STRING))
+        return self.parse_expression()
 
     def parse_read(self):
         read_tok = self.eat(TokenType.READ)
@@ -1268,8 +1273,9 @@ class Analyzer:
                 self.error(node.name_tok, f"'🚪' needs an integer or boolean variable, got '{node.name}' of type {t}")
         elif isinstance(node, PrintNode):
             node.viewer = self.viewer()
-            if not isinstance(node.expr, StringNode):
-                self.expr_type(node.expr)
+            for item in node.items:
+                if not isinstance(item, StringNode):
+                    self.expr_type(item)
         elif isinstance(node, ReadNode):
             t = self.check_target(node.target, "read into")
             if t not in INT_TYPES:
@@ -1587,8 +1593,8 @@ def statement_expr(stmt):
         return stmt.expr
     if isinstance(stmt, IfNode):
         return stmt.cond
-    if isinstance(stmt, PrintNode):
-        return None if isinstance(stmt.expr, StringNode) else stmt.expr
+    if isinstance(stmt, PrintNode):  # a later item runs after the earlier ones printed: only the first can move
+        return None if isinstance(stmt.items[0], StringNode) else stmt.items[0]
     if isinstance(stmt, CallStatementNode):
         return stmt.call
     return None
@@ -2097,17 +2103,19 @@ class CodeGen:
         b.position_at_end(b.append_basic_block("after_exit"))  # statements after 🚪 are never run
 
     def gen_print(self, node):
-        expr = node.expr
-        if isinstance(expr, StringNode):
-            self.printf_call("%s\n", self.cstr(expr.text))
-            return
-        t = expr.type
-        if t in SCALAR_TYPES:
-            value = self.gen_expr(expr)
-            self.printf_call(SCALAR_FMT[t] + "\n", self.bool_text(value) if t == "bool" else value)
-            return
-        self.print_object(self.address_of(expr), self.a.structs[t], node.viewer)
-        self.printf_call("\n")
+        for i, item in enumerate(node.items):
+            end = "\n" if i == len(node.items) - 1 else ""
+            if isinstance(item, StringNode):
+                self.printf_call("%s" + end, self.cstr(item.text))
+                continue
+            t = item.type
+            if t in SCALAR_TYPES:
+                value = self.gen_expr(item)
+                self.printf_call(SCALAR_FMT[t] + end, self.bool_text(value) if t == "bool" else value)
+                continue
+            self.print_object(self.address_of(item), self.a.structs[t], node.viewer)
+            if end:
+                self.printf_call(end)
 
     def print_object(self, ptr, struct, viewer):
         """Point{x: 1, y: 2}: walks the field table, one gep, load and printf per field.

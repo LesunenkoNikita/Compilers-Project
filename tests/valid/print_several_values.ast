@@ -1,0 +1,38 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Point, fields: 2, member functions: 0)
+    FieldNode @3:3 (modifier: mutable, mutable: true, type: i32, name: x, default: false)
+    FieldNode @4:5 (modifier: mutable, mutable: true, type: i32, name: y, default: false, access: private)
+  FunctionNode @6:1 (name: noisy, result: i32, params: 1)
+    ParamNode @6:12 (type: i32, name: v)
+    Body
+      PrintNode @8:3
+        StringNode @8:6 (text: "called")
+      ReturnNode @9:3
+        ValueNode @9:5 (ID: v)
+  DeclAndAssignNode @11:1 (modifier: mutable, mutable: true, type: i32, name: a)
+    ValueNode @11:10 (INT: 3)
+  PrintNode @12:1
+    StringNode @12:4 (text: "Digit ")
+    ValueNode @12:14 (ID: a)
+    StringNode @12:17 (text: " is at position ")
+    BinOpNode @12:39 (op: +)
+      ValueNode @12:37 (ID: a)
+      ValueNode @12:41 (INT: 1)
+  PrintNode @13:1
+    ValueNode @13:4 (ID: a)
+    ValueNode @13:7 (ID: a)
+  PrintNode @14:1
+    StringNode @14:4 (text: "flag: ")
+    ValueNode @14:14 (BOOL: true)
+    StringNode @14:17 (text: ", point: ")
+    CallNode @14:30 (name: Point, args: 2)
+      ValueNode @14:36 (INT: 1)
+      ValueNode @14:39 (INT: 2)
+    StringNode @14:43 (text: "!")
+  PrintNode @15:1
+    StringNode @15:4 (text: "before ")
+    CallNode @15:15 (name: noisy, args: 1)
+      ValueNode @15:21 (INT: 5)
+  PrintNode @16:1
+    StringNode @16:4 (text: "no newline before this: ")
+    StringNode @16:32 (text: "100% \"done\"")
