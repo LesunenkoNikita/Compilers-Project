@@ -1,0 +1,40 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Pair, fields: 2, member functions: 2)
+    FieldNode @3:5 (modifier: mutable, mutable: true, type: i32, name: left, default: false, access: public)
+    FieldNode @4:3 (modifier: mutable, mutable: true, type: i32, name: right, default: false)
+    MemberFunctionNode @5:5 (struct: Pair, name: sum, result: i32, params: 0, access: public)
+      Body
+        ReturnNode @7:5
+          BinOpNode @7:12 (op: +)
+            ValueNode @7:7 (ID: left)
+            ValueNode @7:14 (ID: right)
+    MemberFunctionNode @9:3 (struct: Pair, name: diff, result: i32, params: 0)
+      Body
+        ReturnNode @11:5
+          BinOpNode @11:12 (op: -)
+            ValueNode @11:7 (ID: left)
+            ValueNode @11:14 (ID: right)
+  DeclAndAssignNode @14:1 (modifier: mutable, mutable: true, type: Pair, name: p)
+    CallNode @14:13 (name: Pair, args: 2)
+      ValueNode @14:18 (INT: 5)
+      ValueNode @14:21 (INT: 3)
+  AssignmentNode @15:1 (name: p.left)
+    ChainNode @15:1 (path: p.left, ends in member call: false)
+      ValueNode @15:1 (ID: p)
+      FieldStepNode @15:3 (field: left)
+    ValueNode @15:11 (INT: 10)
+  AssignmentNode @16:1 (name: p.right)
+    ChainNode @16:1 (path: p.right, ends in member call: false)
+      ValueNode @16:1 (ID: p)
+      FieldStepNode @16:3 (field: right)
+    ValueNode @16:12 (INT: 4)
+  PrintNode @17:1
+    ChainNode @17:4 (path: p.sum(), ends in member call: true)
+      ValueNode @17:4 (ID: p)
+      MemberCallStepNode @17:6 (member function: sum, args: 0)
+  PrintNode @18:1
+    ChainNode @18:4 (path: p.diff(), ends in member call: true)
+      ValueNode @18:4 (ID: p)
+      MemberCallStepNode @18:6 (member function: diff, args: 0)
+  PrintNode @19:1
+    ValueNode @19:4 (ID: p)

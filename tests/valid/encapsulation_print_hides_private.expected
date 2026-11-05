@@ -1,0 +1,4 @@
+Card{owner: 7, key: Key{}}
+Card{pin: 1234, owner: 7, blocked: false, key: Key{}}
+Key{}
+Key{code: 6}

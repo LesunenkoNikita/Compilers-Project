@@ -1,0 +1,20 @@
+🏰 Counter
+{
+  🔒 🙂 🐒 value
+  🔒 🛠️ 🐒 step()
+  {
+    🔙 2
+  }
+  🔒 🛠️ 🐒 bump()
+  {
+    value => value ➕ step()
+    🔙 value
+  }
+  🔓 🛠️ 🐒 tick()
+  {
+    bump()
+    🔙 bump()
+  }
+}
+🙂 Counter c => Counter(1)
+🖨️(c.tick())

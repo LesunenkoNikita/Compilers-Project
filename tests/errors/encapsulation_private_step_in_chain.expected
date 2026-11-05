@@ -1,0 +1,1 @@
+compilation error: line 10:6: Cannot access private field 'in' of structure 'Outer' from outside it

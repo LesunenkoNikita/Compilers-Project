@@ -1,0 +1,26 @@
+🏰 Key
+{
+  🔒 🙂 🐒 code
+  🛠️ 🐒 show()
+  {
+    🖨️(Key(code ➕ 1))
+    🔙 code
+  }
+}
+🏰 Card
+{
+  🔒 🙂 🐒 pin
+  ☹️ 🐒 owner
+  🔒 🚫 boo!👻 blocked => 👎
+  ☹️ Key key
+  🛠️ 🐒 dump()
+  {
+    🖨️(Card(pin, owner, key))
+    🔙 pin
+  }
+}
+☹️ Card c => Card(1234, 7, Key(9))
+🖨️(c)
+c.dump()
+🖨️(Key(5))
+Key(5).show()

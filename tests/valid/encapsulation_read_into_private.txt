@@ -1,0 +1,26 @@
+🏰 Lock
+{
+  🔒 🙂 🐒 pin
+  🔒 🚫 🐒 master => 1111
+  🛠️ boo!👻 tryPin()
+  {
+    🙂 🐒 guess
+    📖(guess)
+    🤔 guess ✅ pin
+    {
+      🔙 👍
+    }
+    🔙 guess ✅ master
+  }
+  🛠️ 🐒 change()
+  {
+    📖(pin)
+    🔙 pin
+  }
+}
+🙂 Lock l => Lock(42)
+🖨️(l.tryPin())
+🖨️(l.tryPin())
+🖨️(l.tryPin())
+🖨️(l.change())
+🖨️(l.tryPin())

@@ -1,0 +1,13 @@
+🏰 Vault
+{
+  🔒 🙂 🐒 pin
+  🔒 🛠️ 🐒 secret()
+  {
+    🔙 pin
+  }
+  🛠️ 🐒 open()
+  {
+    🔙 secret()
+  }
+}
+☹️ Vault v => Vault()

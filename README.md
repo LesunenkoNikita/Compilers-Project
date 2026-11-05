@@ -1,11 +1,10 @@
-# Emoji language — Stage 2 (functions, structures, code generation)
+# Emoji language — Stage 3 (encapsulation)
 
 A small statically-typed language written with emojis. The compiler is a hand-written byte-level lexer (a state
 machine), a recursive-descent parser (one function per grammar rule), a semantic pass with a symbol table, and an
 LLVM IR generator built with the `llvmlite.ir` builder. Compiled programs run with `lli` or `llc` + `clang`.
 
 - [`grammar.ebnf`](grammar.ebnf) — the full grammar with its lexical rules
-- [`README_TASK1.md`](README_TASK1.md) — Stage 2 Task 1 alone: the new constructs and the semantic rules
 
 ## The language — Stage 1 constructs
 
@@ -271,7 +270,7 @@ input into a variable or a field chain.
 19. **print.** `🖨️(v)` prints one value and then a newline: an integer in decimal (`%d` for i32, `%lld` for i64),
     a bool as `true` / `false`, a string literal as written (escapes decoded), an object as its structure name and
     its fields in declaration order: `Circle{center: Point{x: 1, y: 2}, radius: 5}` — nested objects inline, one
-    newline after the whole object. — follows: `print_every_kind`, `struct_field_chain`; breaks:
+    newline after the whole object; private fields are left out by Stage 3 rule 5. — follows: `print_every_kind`, `struct_field_chain`; breaks:
     `syn_string_outside_print`, `syn_print_without_parens`.
 20. **read.** `📖(target)` reads one integer from standard input into a mutable integer variable or field chain
     (rule 8). Input that is not an integer stops the program with a runtime error. — follows: `read_point`,
@@ -289,6 +288,115 @@ input into a variable or a field chain.
 - A structure has at least one field. — breaks: `syn_struct_without_fields`.
 - The result of a call cannot be assigned to, nor can a field of it. — breaks: `syn_assign_to_call_result`.
 
+## The language — Stage 3 feature: encapsulation
+
+`🔓` (public) and `🔒` (private) go in front of a field or a member function of a structure. They are checked by
+the semantic pass and are gone by code generation: a private field has the same layout and the same `gep` as a
+public one.
+
+### Rules
+
+1. **Default.** A field or member function without a modifier is **public**; nothing is private by default. `🔓`
+   only says so explicitly. — follows: `encapsulation_public_by_default`.
+2. **Where a private member is reachable.** A private field or member function is used only inside the member
+   functions of its own structure: by plain name (`pin`, `secret()`), or on another object of the same structure
+   (`o.x`, `o.sum()`). — follows: `encapsulation_private_member_function`,
+   `encapsulation_same_structure_objects`, `encapsulation_read_into_private`.
+3. **Access from outside is an error that names the member.** Reading, assigning (`v.pin => 2`), reading input into
+   it (`📖(v.pin)`) or calling it from the top level, from a function or from a member function of another structure
+   gives `Cannot access private field 'pin' of structure 'Vault' from outside it` or
+   `Cannot call private member function 'secret' of structure 'Vault' from outside it`, at the position of the
+   member's name. A private step in the middle of a chain counts too (`o.in.x`). — breaks:
+   `encapsulation_read_private_field`, `encapsulation_assign_private_field`, `encapsulation_call_private_member`,
+   `encapsulation_read_into_private_field`, `encapsulation_from_plain_function`,
+   `encapsulation_from_other_structure`, `encapsulation_member_call_from_other_structure`,
+   `encapsulation_private_step_in_chain`.
+4. **Constructors set private fields.** `Name(…)` takes a value for every field without `=> value`, private ones
+   included, from anywhere in the program; missing one is still an error. — follows:
+   `encapsulation_private_field_getter`; breaks: `encapsulation_constructor_needs_private_value`.
+5. **Printing does not reveal private fields.** `🖨️(obj)` shows a private field only when it runs inside a member
+   function of that field's structure; elsewhere the field is left out: `Card{owner: 7, key: Key{}}`. — follows:
+   `encapsulation_print_hides_private`, `encapsulation_private_object_field`.
+6. **Modifiers go on members only**, at most one per member. — breaks: `encapsulation_two_modifiers`,
+   `encapsulation_on_variable`, `encapsulation_on_function`, `encapsulation_before_statement_in_struct`.
+
+All other rules are unchanged: a private field still follows its mutability modifier, and a private mutating member
+function still makes its callers mutating.
+
+### Example 1: a private field behind a getter
+
+```
+🏰 Account
+{
+  🔒 🙂 🦍 balance
+  ☹️ 🐒 id
+  🛠️ 🦍 getBalance()
+  {
+    🔙 balance
+  }
+}
+☹️ Account acc => Account(100, 7)
+🖨️(acc.getBalance())
+🖨️(acc)
+```
+
+prints `100` and `Account{id: 7}`. Writing `🖨️(acc.balance)` instead is
+`compilation error: line 11:8: Cannot access private field 'balance' of structure 'Account' from outside it`.
+
+### Example 2: a private member function
+
+```
+🏰 Counter
+{
+  🔒 🙂 🐒 value
+  🔒 🛠️ 🐒 step()
+  {
+    🔙 2
+  }
+  🔒 🛠️ 🐒 bump()
+  {
+    value => value ➕ step()
+    🔙 value
+  }
+  🔓 🛠️ 🐒 tick()
+  {
+    bump()
+    🔙 bump()
+  }
+}
+🙂 Counter c => Counter(1)
+🖨️(c.tick())
+```
+
+prints `5`.
+
+### The IR of Example 1
+
+```llvm
+define i64 @"Account.getBalance"(%"struct.Account"* %"this")
+{
+entry:
+  %"balance" = getelementptr inbounds %"struct.Account", %"struct.Account"* %"this", i32 0, i32 0
+  %"balance.1" = load i64, i64* %"balance"
+  ret i64 %"balance.1"
+...
+define i32 @"main"()
+...
+  %"balance" = getelementptr inbounds %"struct.Account", %"struct.Account"* %"new.Account", i32 0, i32 0
+  store i64 100, i64* %"balance"
+...
+  %".8" = call i32 (i8*, ...) @"printf"(i8* getelementptr ([9 x i8], [9 x i8]* @"str.2", i32 0, i32 0))
+  %"id.1" = getelementptr inbounds %"struct.Account", %"struct.Account"* @"g.acc", i32 0, i32 1
+  %".9" = load i32, i32* %"id.1"
+  %".10" = call i32 (i8*, ...) @"printf"(i8* getelementptr ([7 x i8], [7 x i8]* @"str.3", i32 0, i32 0), i32 %".9")
+```
+
+`Account.getBalance` reaches the private `balance` with an ordinary `getelementptr` at index 0 of its `this`
+pointer: privacy costs nothing at run time, because the check already happened in the semantic pass. The constructor
+in `main` writes the same index directly, which is why a private field can be set when the object is created. The
+print of `acc` emits `Account{` and then one `gep`, `load` and `printf` for `id` at index 1 only: index 0 is skipped,
+so the private balance never reaches `printf`.
+
 ## Build and run
 
 Requirements: Python 3.8+, `llvmlite` (in the `~/lcd` virtual environment) and LLVM (`lli`, or `llc` and `clang`).
@@ -303,15 +411,12 @@ python3 compiler.py --ast input.txt          # print the AST (front end only, no
 
 A program that reads input takes it from standard input: `lli output.ll < input.in`.
 
-`task2compiler.py` is the Task 2 front end alone (lexer + parser + AST, no `llvmlite` needed):
-`python3 task2compiler.py --ast input.txt`. `test.txt` is a program using every new construct and `test.expected`
-is its AST: `python3 task2compiler.py --ast test.txt | diff - test.expected`.
-
 ### Output of `--ast`
 
 The AST indented by depth. Each node shows its position (`@line:column`, columns counted in characters) and its
 fields: modifiers and mutability of variables and fields, parameter and result types of functions, the number of
-arguments of a call, and for a chain its path and whether it ends in a member call:
+arguments of a call, for a chain its path and whether it ends in a member call, and `access: public` / `access: private`
+on a member that has `🔓` / `🔒` written:
 
 ```
 FunctionNode @1:1 (name: add, result: i32, params: 2)
@@ -351,7 +456,8 @@ Runtime errors (arithmetic overflow, an i64 that does not fit an i32, input that
    - variables (`VarInfo`: type, modifier, global / local / parameter) in nested scopes,
    - functions (`FuncInfo`: parameter types, result type),
    - structures (`StructInfo`: fields in order with index, type and mutability; member functions with their
-     signatures and whether they are mutating — a fixed point over the "calls a mutating member" relation).
+     signatures and whether they are mutating — a fixed point over the "calls a mutating member" relation; each
+     field and member function also records whether it is private).
    It annotates the AST (types, resolved names, field indexes) for the code generator.
 4. **Code generation** (`CodeGen`) with the `llvmlite.ir` builder; the only IR text written is `str(module)`:
    - every Stage 1 construct: globals for top-level variables, `alloca`s for locals, `if`/`else` as basic blocks
@@ -391,8 +497,8 @@ Generated files go to `build/`, which is not committed.
 
 | Folder | Count | Content |
 |--------|-------|---------|
-| `tests/valid` | 49 | the 30 valid Stage 1 programs (now also compiled and run) and 19 Stage 2 programs; 2 of them read input (`read_point`, `read_i32_and_i64`) |
-| `tests/errors` | 96 | `lex_` lexical, `syn_` syntax, `sem_` semantic errors: 40 from Stage 1 (with the moved literal test), 56 new |
+| `tests/valid` | 56 | the 30 valid Stage 1 programs (now also compiled and run), 19 Stage 2 programs and 7 `encapsulation_` programs; 3 of them read input (`read_point`, `read_i32_and_i64`, `encapsulation_read_into_private`) |
+| `tests/errors` | 109 | `lex_` lexical, `syn_` syntax, `sem_` semantic errors: 40 from Stage 1 (with the moved literal test), 56 from Stage 2, and 13 `encapsulation_` errors |
 
 The Stage 1 test `literal_beyond_i32_still_parses` is now `tests/errors/sem_literal_beyond_i32_still_parses`: it
 still parses (its `.ast` is the Stage 1 AST) and the semantic pass rejects the out-of-range i32 literal.
@@ -401,10 +507,8 @@ still parses (its `.ast` is the Stage 1 AST) and the semantic pass rejects the o
 
 ```
 compiler.py        lexer, parser, AST, semantic pass, LLVM IR generation, command line
-task2compiler.py   the Task 2 front end alone (lexer, parser, --ast)
 grammar.ebnf       the grammar
-README_TASK1.md    the Stage 2 constructs and the semantic rules
 run_tests.py       test runner
 tests/             valid/ and errors/ test cases
-test.txt           Task 2 sample program, test.expected its AST
 ```
+

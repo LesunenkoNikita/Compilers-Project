@@ -35,6 +35,7 @@ class TokenType:
     RETURN = "RETURN"
     STRUCT = "STRUCT"
     METHOD = "METHOD"
+    ACCESS = "ACCESS"
     READ = "READ"
     PRINT = "PRINT"
     NEWLINE = "NEWLINE"
@@ -76,6 +77,8 @@ KEYWORDS = [
     ("🏰", TokenType.STRUCT),
     ("\U0001F6E0", TokenType.METHOD),      # 🛠 member function
     ("\U0001F6E0" + VS16, TokenType.METHOD),
+    ("🔓", TokenType.ACCESS),              # public member
+    ("🔒", TokenType.ACCESS),              # private member
     ("📖", TokenType.READ),
     ("\U0001F5A8", TokenType.PRINT),       # 🖨 print
     ("\U0001F5A8" + VS16, TokenType.PRINT),
@@ -232,7 +235,13 @@ class Lexer:
 MODIFIER_NAMES = {"🚫": "constant", "🙂": "mutable", "☹️": "immutable"}
 TYPE_NAMES = {"🐒": "i32", "🦍": "i64", "boo!👻": "bool"}
 OP_NAMES = {"✅": "==", "❎": "!=", "➕": "+", "➖": "-", "✖": "*", "✖" + VS16: "*"}
+ACCESS_NAMES = {"🔓": "public", "🔒": "private"}
 OP_EMOJI = {"==": "✅", "!=": "❎", "+": "➕", "-": "➖", "*": "✖️"}
+
+
+def access_detail(access):
+    """The --ast text of a member's access modifier; a member without one prints nothing extra."""
+    return f", access: {access}" if access else ""
 
 
 def type_name_of(tok):
@@ -442,22 +451,25 @@ class FunctionNode(StmtNode):
 
 
 class MemberFunctionNode(FunctionNode):
-    def __init__(self, fn_tok, result_tok, name_tok, params, body, owner):
+    def __init__(self, fn_tok, result_tok, name_tok, params, body, owner, access=None):
         super().__init__(fn_tok, result_tok, name_tok, params, body)
-        self.owner = owner  # name of the structure
+        self.owner = owner    # name of the structure
+        self.access = access  # "public", "private", or None when no modifier is written (public)
 
     def details(self):
-        return f"struct: {self.owner}, " + super().details()
+        return f"struct: {self.owner}, " + super().details() + access_detail(self.access)
 
 
 class FieldNode(ASTNode, _DeclMixin):
-    def __init__(self, mod_tok, type_tok, id_tok, default):
+    def __init__(self, mod_tok, type_tok, id_tok, default, access=None):
         super().__init__(mod_tok.line, mod_tok.col)
         self.init_decl(mod_tok, type_tok, id_tok)
         self.default = default  # expression or None
+        self.access = access    # "public", "private", or None when no modifier is written (public)
 
     def details(self):
-        return self.decl_details() + f", default: {str(self.default is not None).lower()}"
+        return (self.decl_details() + f", default: {str(self.default is not None).lower()}"
+                + access_detail(self.access))
 
     def children(self):
         return [self.default] if self.default is not None else []
@@ -606,6 +618,7 @@ EXPECTED = {
     TokenType.RETURN: "'🔙'",
     TokenType.STRUCT: "'🏰'",
     TokenType.METHOD: "'🛠️'",
+    TokenType.ACCESS: "an access modifier (🔓 or 🔒)",
     TokenType.READ: "'📖'",
     TokenType.PRINT: "'🖨️'",
     TokenType.NEWLINE: "end of line",
@@ -699,6 +712,8 @@ class Parser:
             self.error_at(self.cur, f"{what} can be declared only at the top level")
         if kind == TokenType.METHOD:
             self.error_at(self.cur, "A member function can be declared only inside a structure")
+        if kind == TokenType.ACCESS:
+            self.error_at(self.cur, f"'{self.cur.text}' can be used only on a field or a member function of a structure")
         self.error_at(self.cur, f"Expected a statement, got {describe(self.cur)}")
 
     def parse_simple_statement(self):
@@ -851,22 +866,30 @@ class Parser:
         self.eat(TokenType.NEWLINE)
         fields, methods = [], []
         while self.peek().kind != TokenType.RBRACE:
-            kind = self.peek().kind
-            if kind == TokenType.MODIFIER:
-                fields.append(self.parse_field())
-            elif kind == TokenType.METHOD:
-                methods.append(self.parse_member_function(name.text))
-            elif kind == TokenType.EOF:
-                self.error_at(self.cur, "Unclosed block: expected '}', got end of file")
-            else:
-                self.error_at(self.cur, f"Expected a field or a member function, got {describe(self.cur)}")
+            self.parse_member(name.text, fields, methods)
         if not fields:
             self.error_at(self.cur, f"Structure '{name.text}' must have at least one field")
         self.eat(TokenType.RBRACE)
         self.eat(TokenType.NEWLINE)
         return StructNode(struct_tok, name, fields, methods)
 
-    def parse_field(self):
+    def parse_member(self, owner, fields, methods):
+        access_tok = self.eat(TokenType.ACCESS) if self.peek().kind == TokenType.ACCESS else None
+        access = ACCESS_NAMES[access_tok.text] if access_tok else None
+        kind = self.peek().kind
+        if kind == TokenType.MODIFIER:
+            fields.append(self.parse_field(access))
+        elif kind == TokenType.METHOD:
+            methods.append(self.parse_member_function(owner, access))
+        elif access_tok:
+            self.error_at(self.cur, f"Expected a field or a member function after '{access_tok.text}', "
+                                    f"got {describe(self.cur)}")
+        elif kind == TokenType.EOF:
+            self.error_at(self.cur, "Unclosed block: expected '}', got end of file")
+        else:
+            self.error_at(self.cur, f"Expected a field or a member function, got {describe(self.cur)}")
+
+    def parse_field(self, access=None):
         mod = self.eat(TokenType.MODIFIER)
         typ = self.parse_decl_type()
         ident = self.eat(TokenType.ID)
@@ -875,12 +898,12 @@ class Parser:
             self.eat(TokenType.ASSIGN)
             default = self.parse_expression()
         self.eat(TokenType.NEWLINE)
-        return FieldNode(mod, typ, ident, default)
+        return FieldNode(mod, typ, ident, default, access)
 
-    def parse_member_function(self, owner):
+    def parse_member_function(self, owner, access=None):
         fn_tok = self.eat(TokenType.METHOD)
         result, name, params, body = self.parse_function_rest()
-        return MemberFunctionNode(fn_tok, result, name, params, body, owner)
+        return MemberFunctionNode(fn_tok, result, name, params, body, owner, access)
 
     # ---------- expressions ----------
 
@@ -1016,6 +1039,7 @@ class FieldInfo:
         self.node, self.index = node, index
         self.name, self.type = node.name, node.type_name
         self.modifier, self.mutable = node.modifier, node.mutable
+        self.private = node.access == "private"
 
 
 class FuncInfo:
@@ -1028,6 +1052,7 @@ class FuncInfo:
         self.direct_mutation = False  # assigns or reads into a field of its object
         self.mutating_deps = []       # member functions called on its own object (or on fields of it)
         self.mutating = False
+        self.private = owner is not None and node.access == "private"
         self.ir_func = None
 
     def describe(self):
@@ -1235,6 +1260,7 @@ class Analyzer:
             if t not in SCALAR_TYPES:
                 self.error(node.name_tok, f"'🚪' needs an integer or boolean variable, got '{node.name}' of type {t}")
         elif isinstance(node, PrintNode):
+            node.viewer = self.viewer()
             if not isinstance(node.expr, StringNode):
                 self.expr_type(node.expr)
         elif isinstance(node, ReadNode):
@@ -1306,7 +1332,14 @@ class Analyzer:
             if step.name in struct.methods:
                 self.error(step, f"'{step.name}' is a member function of '{type_name}', call it with '()'")
             self.error(step, f"Structure '{type_name}' has no field '{step.name}'")
-        return struct.fields[step.name]
+        field = struct.fields[step.name]
+        if field.private and self.viewer() is not struct:
+            self.error(step, f"Cannot access private field '{step.name}' of structure '{type_name}' from outside it")
+        return field
+
+    def viewer(self):
+        """The structure whose member function is being checked: the only place its private members are reachable."""
+        return self.fn.owner if self.fn is not None else None
 
     # ---------- expressions ----------
 
@@ -1441,6 +1474,9 @@ class Analyzer:
                     self.error(step, f"'{step.name}' is a field of '{t}', not a member function")
                 self.error(step, f"Structure '{t}' has no member function '{step.name}'")
             m = struct.methods[step.name]
+            if m.private and self.viewer() is not struct:
+                self.error(step, f"Cannot call private member function '{step.name}' of structure '{t}' "
+                                 f"from outside it")
             step.method = m
             self.check_args(step, step.args, m.params, self.param_desc(m))
             self.defer_mutating_check(step, m, list(path) if path is not None else None, ".".join(names), from_field)
@@ -1651,7 +1687,7 @@ class CodeGen:
         elif isinstance(node, ExitNode):
             self.gen_exit(node)
         elif isinstance(node, PrintNode):
-            self.gen_print(node.expr)
+            self.gen_print(node)
         elif isinstance(node, ReadNode):
             self.gen_read(node)
         elif isinstance(node, CallStatementNode):
@@ -1693,7 +1729,8 @@ class CodeGen:
         b.unreachable()
         b.position_at_end(b.append_basic_block("after_exit"))  # statements after 🚪 are never run
 
-    def gen_print(self, expr):
+    def gen_print(self, node):
+        expr = node.expr
         if isinstance(expr, StringNode):
             self.printf_call("%s\n", self.cstr(expr.text))
             return
@@ -1702,13 +1739,15 @@ class CodeGen:
             value = self.gen_expr(expr)
             self.printf_call(SCALAR_FMT[t] + "\n", self.bool_text(value) if t == "bool" else value)
             return
-        self.print_object(self.address_of(expr), self.a.structs[t])
+        self.print_object(self.address_of(expr), self.a.structs[t], node.viewer)
         self.printf_call("\n")
 
-    def print_object(self, ptr, struct):
-        """Point{x: 1, y: 2}: walks the field table, one gep, load and printf per field."""
+    def print_object(self, ptr, struct, viewer):
+        """Point{x: 1, y: 2}: walks the field table, one gep, load and printf per field.
+        Private fields are shown only when the printing code is inside their own structure."""
         self.printf_call(f"{struct.name}{{")
-        for i, field in enumerate(struct.fields.values()):
+        shown = [f for f in struct.fields.values() if not f.private or struct is viewer]
+        for i, field in enumerate(shown):
             sep = ", " if i else ""
             fptr = self.field_ptr(ptr, field)
             if field.type in SCALAR_TYPES:
@@ -1718,7 +1757,7 @@ class CodeGen:
                 self.printf_call(f"{sep}{field.name}: {SCALAR_FMT[field.type]}", value)
             else:
                 self.printf_call(f"{sep}{field.name}: ")
-                self.print_object(fptr, self.a.structs[field.type])
+                self.print_object(fptr, self.a.structs[field.type], viewer)
         self.printf_call("}")
 
     def gen_read(self, node):

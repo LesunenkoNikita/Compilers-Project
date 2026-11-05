@@ -1,0 +1,20 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Vault, fields: 1, member functions: 2)
+    FieldNode @3:5 (modifier: mutable, mutable: true, type: i32, name: pin, default: false, access: private)
+    MemberFunctionNode @4:5 (struct: Vault, name: secret, result: i32, params: 0, access: private)
+      Body
+        ReturnNode @6:5
+          ValueNode @6:7 (ID: pin)
+    MemberFunctionNode @8:3 (struct: Vault, name: open, result: i32, params: 0)
+      Body
+        ReturnNode @10:5
+          CallNode @10:7 (name: secret, args: 0)
+  StructNode @13:1 (name: Thief, fields: 1, member functions: 1)
+    MemberFunctionNode @15:3 (struct: Thief, name: crack, result: i32, params: 1)
+      ParamNode @15:14 (type: Vault, name: v)
+      Body
+        ReturnNode @17:5
+          ChainNode @17:7 (path: v.secret(), ends in member call: true)
+            ValueNode @17:7 (ID: v)
+            MemberCallStepNode @17:9 (member function: secret, args: 0)
+    FieldNode @19:3 (modifier: mutable, mutable: true, type: i32, name: tries, default: false)

@@ -1,0 +1,1 @@
+compilation error: line 18:14: Cannot access private field 'pin' of structure 'Vault' from outside it

@@ -1,0 +1,20 @@
+🏰 Vault
+{
+  🔒 🙂 🐒 pin
+  🔒 🛠️ 🐒 secret()
+  {
+    🔙 pin
+  }
+  🛠️ 🐒 open()
+  {
+    🔙 secret()
+  }
+}
+🏰 Thief
+{
+  🛠️ 🐒 crack(Vault v)
+  {
+    🔙 v.secret()
+  }
+  🙂 🐒 tries
+}

@@ -1,0 +1,52 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Vec, fields: 2, member functions: 3)
+    FieldNode @3:5 (modifier: mutable, mutable: true, type: i32, name: x, default: false, access: private)
+    FieldNode @4:5 (modifier: mutable, mutable: true, type: i32, name: y, default: false, access: private)
+    MemberFunctionNode @5:5 (struct: Vec, name: sum, result: i32, params: 0, access: private)
+      Body
+        ReturnNode @7:5
+          BinOpNode @7:9 (op: +)
+            ValueNode @7:7 (ID: x)
+            ValueNode @7:11 (ID: y)
+    MemberFunctionNode @9:3 (struct: Vec, name: dot, result: i32, params: 1)
+      ParamNode @9:12 (type: Vec, name: o)
+      Body
+        ReturnNode @11:5
+          BinOpNode @11:16 (op: +)
+            BinOpNode @11:9 (op: *)
+              ValueNode @11:7 (ID: x)
+              ChainNode @11:12 (path: o.x, ends in member call: false)
+                ValueNode @11:12 (ID: o)
+                FieldStepNode @11:14 (field: x)
+            BinOpNode @11:20 (op: *)
+              ValueNode @11:18 (ID: y)
+              ChainNode @11:23 (path: o.y, ends in member call: false)
+                ValueNode @11:23 (ID: o)
+                FieldStepNode @11:25 (field: y)
+    MemberFunctionNode @13:3 (struct: Vec, name: sumOf, result: i32, params: 1)
+      ParamNode @13:14 (type: Vec, name: o)
+      Body
+        ReturnNode @15:5
+          BinOpNode @15:13 (op: +)
+            CallNode @15:7 (name: sum, args: 0)
+            ChainNode @15:15 (path: o.sum(), ends in member call: true)
+              ValueNode @15:15 (ID: o)
+              MemberCallStepNode @15:17 (member function: sum, args: 0)
+  DeclAndAssignNode @18:1 (modifier: immutable, mutable: false, type: Vec, name: a)
+    CallNode @18:13 (name: Vec, args: 2)
+      ValueNode @18:17 (INT: 1)
+      ValueNode @18:20 (INT: 2)
+  DeclAndAssignNode @19:1 (modifier: immutable, mutable: false, type: Vec, name: b)
+    CallNode @19:13 (name: Vec, args: 2)
+      ValueNode @19:17 (INT: 3)
+      ValueNode @19:20 (INT: 4)
+  PrintNode @20:1
+    ChainNode @20:4 (path: a.dot(), ends in member call: true)
+      ValueNode @20:4 (ID: a)
+      MemberCallStepNode @20:6 (member function: dot, args: 1)
+        ValueNode @20:10 (ID: b)
+  PrintNode @21:1
+    ChainNode @21:4 (path: a.sumOf(), ends in member call: true)
+      ValueNode @21:4 (ID: a)
+      MemberCallStepNode @21:6 (member function: sumOf, args: 1)
+        ValueNode @21:12 (ID: b)

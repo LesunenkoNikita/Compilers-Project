@@ -1,0 +1,47 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Key, fields: 1, member functions: 1)
+    FieldNode @3:5 (modifier: mutable, mutable: true, type: i32, name: code, default: false, access: private)
+    MemberFunctionNode @4:3 (struct: Key, name: show, result: i32, params: 0)
+      Body
+        PrintNode @6:5
+          CallNode @6:8 (name: Key, args: 1)
+            BinOpNode @6:17 (op: +)
+              ValueNode @6:12 (ID: code)
+              ValueNode @6:19 (INT: 1)
+        ReturnNode @7:5
+          ValueNode @7:7 (ID: code)
+  StructNode @10:1 (name: Card, fields: 4, member functions: 1)
+    FieldNode @12:5 (modifier: mutable, mutable: true, type: i32, name: pin, default: false, access: private)
+    FieldNode @13:3 (modifier: immutable, mutable: false, type: i32, name: owner, default: false)
+    FieldNode @14:5 (modifier: constant, mutable: false, type: bool, name: blocked, default: true, access: private)
+      ValueNode @14:24 (BOOL: false)
+    FieldNode @15:3 (modifier: immutable, mutable: false, type: Key, name: key, default: false)
+    MemberFunctionNode @16:3 (struct: Card, name: dump, result: i32, params: 0)
+      Body
+        PrintNode @18:5
+          CallNode @18:8 (name: Card, args: 3)
+            ValueNode @18:13 (ID: pin)
+            ValueNode @18:18 (ID: owner)
+            ValueNode @18:25 (ID: key)
+        ReturnNode @19:5
+          ValueNode @19:7 (ID: pin)
+  DeclAndAssignNode @22:1 (modifier: immutable, mutable: false, type: Card, name: c)
+    CallNode @22:14 (name: Card, args: 3)
+      ValueNode @22:19 (INT: 1234)
+      ValueNode @22:25 (INT: 7)
+      CallNode @22:28 (name: Key, args: 1)
+        ValueNode @22:32 (INT: 9)
+  PrintNode @23:1
+    ValueNode @23:4 (ID: c)
+  CallStatementNode @24:1
+    ChainNode @24:1 (path: c.dump(), ends in member call: true)
+      ValueNode @24:1 (ID: c)
+      MemberCallStepNode @24:3 (member function: dump, args: 0)
+  PrintNode @25:1
+    CallNode @25:4 (name: Key, args: 1)
+      ValueNode @25:8 (INT: 5)
+  CallStatementNode @26:1
+    ChainNode @26:1 (path: Key().show(), ends in member call: true)
+      CallNode @26:1 (name: Key, args: 1)
+        ValueNode @26:5 (INT: 5)
+      MemberCallStepNode @26:8 (member function: show, args: 0)
