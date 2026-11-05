@@ -1,0 +1,6 @@
+⚙️ 🐒 add(🐒 a, 🐒 b)
+{
+  🔙 a ➕ b
+}
+🙂 🐒 total => add(2, 3)
+🖨️(total)

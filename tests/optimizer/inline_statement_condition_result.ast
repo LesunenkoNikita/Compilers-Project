@@ -1,0 +1,24 @@
+ProgramNode @1:1
+  DeclarationNode @14:1 (modifier: mutable, mutable: true, type: i32, name: n)
+  ReadNode @15:1 (target: n)
+    ValueNode @15:3 (ID: n)
+  DeclAndAssignNode @16:1 (modifier: immutable, mutable: false, type: i32, name: announce$2$v)
+    ValueNode @16:10 (ID: n)
+  PrintNode @7:3
+    ValueNode @7:6 (ID: announce$2$v)
+  DeclAndAssignNode @17:3 (modifier: immutable, mutable: false, type: i32, name: isZero$1$v)
+    ValueNode @17:10 (ID: n)
+  IfNode @17:1
+    Condition
+      BinOpNode @3:7 (op: ==)
+        ValueNode @3:5 (ID: isZero$1$v)
+        ValueNode @3:9 (INT: 0)
+    Then
+      PrintNode @19:3
+        StringNode @19:6 (text: "zero")
+  DeclAndAssignNode @21:4 (modifier: immutable, mutable: false, type: i64, name: narrow$3$v)
+    ValueNode @21:11 (INT: 5000000000)
+  DeclAndAssignNode @21:4 (modifier: immutable, mutable: false, type: i32, name: narrow$3$result)
+    ValueNode @12:5 (ID: narrow$3$v)
+  PrintNode @21:1
+    ValueNode @21:4 (ID: narrow$3$result)

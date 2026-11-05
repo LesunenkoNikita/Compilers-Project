@@ -1,0 +1,11 @@
+ProgramNode @1:1
+  DeclAndAssignNode @5:14 (modifier: immutable, mutable: false, type: i32, name: add$1$a)
+    ValueNode @5:18 (INT: 2)
+  DeclAndAssignNode @5:14 (modifier: immutable, mutable: false, type: i32, name: add$1$b)
+    ValueNode @5:21 (INT: 3)
+  DeclAndAssignNode @5:1 (modifier: mutable, mutable: true, type: i32, name: total)
+    BinOpNode @3:7 (op: +)
+      ValueNode @3:5 (ID: add$1$a)
+      ValueNode @3:9 (ID: add$1$b)
+  PrintNode @6:1
+    ValueNode @6:4 (ID: total)

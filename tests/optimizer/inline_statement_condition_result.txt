@@ -1,0 +1,21 @@
+⚙️ boo!👻 isZero(🐒 v)
+{
+  🔙 v ✅ 0
+}
+⚙️ 🐒 announce(🐒 v)
+{
+  🖨️(v)
+  🔙 v
+}
+⚙️ 🐒 narrow(🦍 v)
+{
+  🔙 v
+}
+🙂 🐒 n
+📖(n)
+announce(n)
+🤔 isZero(n)
+{
+  🖨️("zero")
+}
+🖨️(narrow(5000000000))

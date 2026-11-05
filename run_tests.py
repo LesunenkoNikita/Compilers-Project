@@ -8,10 +8,18 @@ tests/valid/NAME.txt  a program that compiles and runs:
 tests/errors/NAME.txt  a program that must be rejected:
     NAME.expected  the single error line on stderr; exit code non-zero, stdout empty, no .ll file written
     NAME.ast       optional: the program parses, so --ast must still print this AST (the error is semantic)
+tests/optimizer/NAME.txt  a program that shows a transformation of --optimize:
+    NAME.ast       the tree printed by --optimize --ast (checked only when this script runs with --optimize)
+    NAME.expected  exactly what the program prints, with and without --optimize
+    NAME.in        optional: the program's standard input
+
+Without --optimize the compiler runs without the optimizer. With --optimize every test compiles through it
+and must give the same result as without it.
 
 The .ll files and binaries go to build/ (not committed).
 
-usage: python3 run_tests.py [--native] [--update-ast] [NAME_FILTER ...]
+usage: python3 run_tests.py [--optimize] [--native] [--update-ast] [NAME_FILTER ...]
+    --optimize    compile every test with --optimize and check the trees in tests/optimizer
     --native      build with llc + clang and run the binary instead of running the .ll with lli
     --update-ast  rewrite the .ast files of the valid tests from the current --ast output
 """
@@ -52,8 +60,9 @@ def compiler(*args):
 
 
 class Runner:
-    def __init__(self, native, update_ast):
+    def __init__(self, native, update_ast, optimize):
         self.native, self.update_ast = native, update_ast
+        self.flags = ("--optimize",) if optimize else ()
         self.notes = []
         tools = ["llc", "clang"] if native else ["lli"]
         self.tools = {t: find_tool(t) for t in tools}
@@ -95,10 +104,21 @@ class Runner:
 
     def check_valid(self, base, name):
         problem = self.check_ast(base, must_exist=False)
-        if problem:
-            return problem
-        ll_path = os.path.join(BUILD, "valid", name + ".ll")
-        p = compiler(base + ".txt", ll_path)
+        return problem or self.check_run(base, os.path.join(BUILD, "valid", name + ".ll"))
+
+    def check_optimizer(self, base, name):
+        if self.flags:
+            p = compiler("--optimize", "--ast", base + ".txt")
+            if p.returncode != 0:
+                return f"--optimize --ast failed: {text(p.stderr)}"
+            if not os.path.exists(base + ".ast"):
+                return "missing NAME.ast"
+            if p.stdout != read(base + ".ast"):
+                return "the tree after --optimize differs from NAME.ast"
+        return self.check_run(base, os.path.join(BUILD, "optimizer", name + ".ll"))
+
+    def check_run(self, base, ll_path):
+        p = compiler(*self.flags, base + ".txt", ll_path)
         if p.returncode != 0 or p.stderr:
             return f"compilation failed (exit code {p.returncode}): {text(p.stderr)}"
         if not os.path.exists(ll_path):
@@ -119,7 +139,7 @@ class Runner:
         ll_path = os.path.join(BUILD, "errors", name + ".ll")
         if os.path.exists(ll_path):
             os.remove(ll_path)
-        p = compiler(base + ".txt", ll_path)
+        p = compiler(*self.flags, base + ".txt", ll_path)
         expected = read(base + ".expected")
         if p.returncode == 0:
             return "expected a compilation error but the program was accepted"
@@ -138,9 +158,11 @@ def main(argv):
     native = "--native" in argv
     update_ast = "--update-ast" in argv
     filters = [a for a in argv[1:] if not a.startswith("--")]
-    runner = Runner(native, update_ast)
+    optimize = "--optimize" in argv
+    runner = Runner(native, update_ast, optimize)
     failed, total = [], 0
-    for folder, checker in (("valid", runner.check_valid), ("errors", runner.check_error)):
+    for folder, checker in (("valid", runner.check_valid), ("errors", runner.check_error),
+                            ("optimizer", runner.check_optimizer)):
         d = os.path.join(ROOT, "tests", folder)
         os.makedirs(os.path.join(BUILD, folder), exist_ok=True)
         for file in sorted(os.listdir(d)):
@@ -163,7 +185,8 @@ def main(argv):
                 print(f"ok    {label}")
     for note in runner.notes:
         print(f"note: {note}")
-    print(f"\n{total - len(failed)}/{total} tests passed ({'llc + clang' if native else 'lli'})")
+    mode = ("llc + clang" if native else "lli") + (", --optimize" if optimize else "")
+    print(f"\n{total - len(failed)}/{total} tests passed ({mode})")
     if failed:
         print("Failed tests:")
         for label in failed:

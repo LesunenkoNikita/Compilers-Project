@@ -1,3 +1,4 @@
+import copy
 import sys
 
 from llvmlite import ir, binding as llvm
@@ -580,7 +581,13 @@ class ChainNode(ExprNode):
         return isinstance(self.base, CallNode) or any(isinstance(s, MemberCallStepNode) for s in self.steps)
 
     def path(self):
-        parts = [self.base.value if isinstance(self.base, ValueNode) else self.base.name + "()"]
+        if isinstance(self.base, ValueNode):
+            first = self.base.value
+        elif isinstance(self.base, ChainNode):  # only after inlining: a call replaced by a chain
+            first = self.base.path()
+        else:
+            first = self.base.name + "()"
+        parts = [first]
         for s in self.steps:
             parts.append(s.name + "()" if isinstance(s, MemberCallStepNode) else s.name)
         return ".".join(parts)
@@ -1514,6 +1521,366 @@ class Analyzer:
 
 
 # ===================================================================
+# Optimizer (--optimize): transformations of the checked tree
+# ===================================================================
+
+INT_MIN = {"i32": -2 ** 31, "i64": -2 ** 63}
+FOUND, CLEAN, BLOCKED = "found", "clean", "blocked"  # what scanning an expression for a call site can report
+
+
+def child_nodes(node):
+    """Every tree node directly below node. Symbol-table objects (VarInfo, FuncInfo...) are not tree nodes."""
+    for value in vars(node).values():
+        if isinstance(value, ASTNode):
+            yield value
+        elif isinstance(value, list):
+            for item in value:
+                if isinstance(item, ASTNode):
+                    yield item
+
+
+def walk(node):
+    yield node
+    for child in child_nodes(node):
+        yield from walk(child)
+
+
+def replace_node(node, old, new):
+    """Replaces old by new somewhere below node."""
+    for key, value in vars(node).items():
+        if value is old:
+            setattr(node, key, new)
+            return True
+        if isinstance(value, ASTNode) and replace_node(value, old, new):
+            return True
+        if isinstance(value, list):
+            for i, item in enumerate(value):
+                if item is old:
+                    value[i] = new
+                    return True
+                if isinstance(item, ASTNode) and replace_node(item, old, new):
+                    return True
+    return False
+
+
+def called_function(node):
+    """The FuncInfo a tree node calls, None when it calls nothing (a constructor calls nothing)."""
+    if isinstance(node, CallNode) and node.target[0] != "construct":
+        return node.target[1]
+    if isinstance(node, MemberCallStepNode):
+        return node.method
+    return None
+
+
+def narrows(expr, want):
+    """Storing expr into a place of type want runs the i64 -> i32 check, which can stop the program."""
+    return expr.type == "i64" and want == "i32" and not is_int_literal(expr)
+
+
+def is_call_expr(expr):
+    return isinstance(expr, CallNode) or (isinstance(expr, ChainNode) and expr.ends_in_call)
+
+
+def statement_expr(stmt):
+    """The expression a statement evaluates before anything else happens, None when it has none."""
+    if isinstance(stmt, (DeclarationNode, DeclAndAssignNode, AssignmentNode, ReturnNode)):
+        return stmt.expr
+    if isinstance(stmt, IfNode):
+        return stmt.cond
+    if isinstance(stmt, PrintNode):
+        return None if isinstance(stmt.expr, StringNode) else stmt.expr
+    if isinstance(stmt, CallStatementNode):
+        return stmt.call
+    return None
+
+
+class Optimizer:
+    def __init__(self, program, analyzer):
+        self.program, self.a = program, analyzer
+        self.inlined = 0
+
+    def run(self):
+        changed = True
+        while changed:  # each transformation can open work for the others, so all repeat until none finds any
+            changed = self.remove_unused_functions()
+            changed = self.inline_function() or changed
+            changed = self.remove_unused_variables() or changed
+
+    # ---------- the program as lists of statements ----------
+
+    def functions(self):
+        return [m for s in self.a.structs.values() for m in s.methods.values()] + list(self.a.functions.values())
+
+    def statement_lists(self):
+        lists = []
+
+        def add(stmts):
+            lists.append(stmts)
+            for s in stmts:
+                if isinstance(s, IfNode):
+                    add(s.then_stmts)
+                    if s.else_stmts is not None:
+                        add(s.else_stmts)
+        add(self.program.statements)
+        for fi in self.functions():
+            add(fi.node.body)
+        return lists
+
+    def top_level_code(self):
+        return [s for s in self.program.statements if not isinstance(s, (FunctionNode, StructNode))]
+
+    @staticmethod
+    def calls_in(nodes):
+        return [f for n in nodes for f in map(called_function, walk(n)) if f is not None]
+
+    # ---------- unused functions ----------
+
+    def remove_unused_functions(self):
+        """Keeps what the top-level code reaches, so a body that dies takes its callees with it, cycles included."""
+        live, todo = set(), self.calls_in(self.top_level_code())
+        while todo:
+            fi = todo.pop()
+            if fi not in live:
+                live.add(fi)
+                todo.extend(self.calls_in(fi.node.body))
+        dead = [fi for fi in self.functions() if fi not in live]
+        for fi in dead:
+            if fi.owner is not None:
+                del fi.owner.methods[fi.name]
+                fi.owner.node.methods.remove(fi.node)
+            else:
+                del self.a.functions[fi.name]
+                self.program.statements.remove(fi.node)
+        return bool(dead)
+
+    # ---------- unused variables ----------
+
+    def reads_of(self, node, reads):
+        """A plain or chain assignment target is a write. 📖 and a member call count as reads: they stay."""
+        if isinstance(node, AssignmentNode):
+            self.reads_of(node.expr, reads)
+            return
+        if isinstance(node, ValueNode) and node.kind == TokenType.ID and node.ref[0] == "var":
+            reads.add(node.ref[1])
+        for child in child_nodes(node):
+            self.reads_of(child, reads)
+
+    def constant_value(self, e):
+        """The value of a 🚫 expression, None when it is not constant or its arithmetic overflows."""
+        if is_int_literal(e):
+            return e.const_value
+        if isinstance(e, ValueNode) and e.kind == TokenType.ID:
+            return self.constant_value(self.constants[e.ref[1]]) if e.ref[1] in self.constants else None
+        if isinstance(e, BinOpNode) and e.op in ARITH_OPS:
+            left, right = self.constant_value(e.left), self.constant_value(e.right)
+            if left is None or right is None:
+                return None
+            value = {"+": left + right, "-": left - right, "*": left * right}[e.op]
+            return value if INT_MIN[e.type] <= value <= INT_MAX[e.type] else None
+        return None
+
+    def is_pure(self, e):
+        """Dropping e changes nothing: no call, no read, and no check that could stop the program."""
+        if isinstance(e, ValueNode):
+            return True
+        if isinstance(e, BinOpNode):
+            if e.op in ARITH_OPS and self.constant_value(e) is None:
+                return False
+            return self.is_pure(e.left) and self.is_pure(e.right)
+        if isinstance(e, ChainNode):
+            return self.is_pure(e.base) and all(isinstance(s, FieldStepNode) for s in e.steps)
+        if isinstance(e, CallNode) and e.target[0] == "construct":
+            fields = e.target[1].ctor_fields()
+            return all(self.is_pure(a) and not narrows(a, f.type) for a, f in zip(e.args, fields))
+        return False
+
+    def replacement(self, stmt, want):
+        """What stays of a statement of a removed variable: [] or the call in it. None: it must stay as it is."""
+        if stmt.expr is None or (self.is_pure(stmt.expr) and not narrows(stmt.expr, want)):
+            return []
+        if is_call_expr(stmt.expr) and not narrows(stmt.expr, want):
+            return [CallStatementNode(stmt.expr)]
+        return None
+
+    @staticmethod
+    def assigned_variable(stmt):
+        """The variable an assignment writes to, directly or through its fields."""
+        if isinstance(stmt, AssignmentNode):
+            base = stmt.target.base if isinstance(stmt.target, ChainNode) else stmt.target
+            return base.ref[1] if base.ref[0] == "var" else None
+        return None
+
+    def remove_unused_variables(self):
+        lists = self.statement_lists()
+        reads = set()
+        self.reads_of(self.program, reads)
+        self.constants = {}
+        unread = set()
+        for stmts in lists:
+            for s in stmts:
+                if isinstance(s, (DeclarationNode, DeclAndAssignNode)):
+                    if s.var.modifier == "constant":
+                        self.constants[s.var] = s.expr
+                    if s.var not in reads:
+                        unread.add(s.var)
+        plans = {}  # variable -> [(statements, statement, what replaces it)]
+        for stmts in lists:
+            for s in stmts:
+                var = s.var if isinstance(s, (DeclarationNode, DeclAndAssignNode)) else self.assigned_variable(s)
+                if var in unread:
+                    want = var.type if isinstance(s, (DeclarationNode, DeclAndAssignNode)) else s.target.type
+                    plans.setdefault(var, []).append((stmts, s, self.replacement(s, want)))
+        changed = False
+        for var, plan in plans.items():
+            if any(new is None for _, _, new in plan):
+                continue  # one statement can stop the program or is more than a call: the variable stays whole
+            for stmts, s, new in plan:
+                i = next(i for i, x in enumerate(stmts) if x is s)
+                stmts[i:i + 1] = new
+            if var in self.a.globals:
+                self.a.globals.remove(var)
+            changed = True
+        return changed
+
+    # ---------- inlining ----------
+
+    def is_recursive(self, fi):
+        seen, todo = set(), self.calls_in(fi.node.body)
+        while todo:
+            callee = todo.pop()
+            if callee is fi:
+                return True
+            if callee not in seen:
+                seen.add(callee)
+                todo.extend(self.calls_in(callee.node.body))
+        return False
+
+    def can_inline(self, fi):
+        """One 🔙, as the last statement of the body; a 🔙 inside a block has no single value to stand at the call."""
+        body = fi.node.body
+        returns = [n for s in body for n in walk(s) if isinstance(n, ReturnNode)]
+        return len(returns) == 1 and returns[0] is body[-1] and not self.is_recursive(fi)
+
+    def scan(self, e, call):
+        """Walks e in evaluation order up to call. BLOCKED: something evaluated before the call cannot move past
+        the inlined body: it could see its changes (a global, a field), or print or stop first (a call, a check)."""
+        if e is call:
+            return FOUND
+        if isinstance(e, ValueNode):
+            if e.kind != TokenType.ID:
+                return CLEAN
+            return CLEAN if e.ref[0] == "var" and e.ref[1].kind != "global" else BLOCKED
+        if isinstance(e, BinOpNode):
+            for side in (e.left, e.right):
+                result = self.scan(side, call)
+                if result != CLEAN:
+                    return result
+            return BLOCKED if e.op in ARITH_OPS else CLEAN
+        if isinstance(e, CallNode):
+            kind, info = e.target
+            types = [f.type for f in info.ctor_fields()] if kind == "construct" else [t for _, t in info.params]
+            result = self.scan_args(e.args, types, call)
+            if result != CLEAN:
+                return result
+            return CLEAN if kind == "construct" else BLOCKED
+        result = self.scan(e.base, call)  # a chain
+        if result != CLEAN:
+            return result
+        for step in e.steps:
+            if isinstance(step, MemberCallStepNode):
+                result = self.scan_args(step.args, [t for _, t in step.method.params], call)
+                return result if result != CLEAN else BLOCKED
+        return CLEAN
+
+    def scan_args(self, args, types, call):
+        for arg, want in zip(args, types):
+            result = self.scan(arg, call)
+            if result != CLEAN:
+                return result
+            if narrows(arg, want):
+                return BLOCKED
+        return CLEAN
+
+    def find_site(self, fi):
+        """The statement list, the statement and the call node, when the call may be inlined there."""
+        for stmts in self.statement_lists():
+            for s in stmts:
+                root = statement_expr(s)
+                if root is None:
+                    continue
+                for node in walk(root):
+                    if called_function(node) is fi:
+                        return (stmts, s, node) if self.scan(root, node) == FOUND else None
+        return None
+
+    def inline_function(self):
+        counts = {}
+        for fi in self.calls_in([self.program]):
+            counts[fi] = counts.get(fi, 0) + 1
+        for fi in self.a.functions.values():  # member functions need their object: they are left alone
+            if counts.get(fi) == 1 and self.can_inline(fi):
+                site = self.find_site(fi)
+                if site is not None:
+                    self.inline(fi, *site)
+                    return True
+        return False
+
+    def declare(self, call, name, type_name, expr):
+        """☹️ type name => expr, placed at the call."""
+        def tok(kind, text):
+            return Token(kind, text, call.line, call.col)
+        node = DeclAndAssignNode(tok(TokenType.MODIFIER, "☹️"), tok(TokenType.TYPE, type_name),
+                                 tok(TokenType.ID, name), expr)
+        node.var = VarInfo(name, type_name, "immutable", "local")
+        return node
+
+    def clone(self, node, prefix, renamed):
+        """A copy of a body's tree: its locals become new variables, renamed. Everything else stays shared."""
+        c = copy.copy(node)
+        if isinstance(c, (DeclarationNode, DeclAndAssignNode)):
+            var = VarInfo(prefix + c.name, c.var.type, c.var.modifier, "local")
+            renamed[c.var] = var
+            c.var, c.name = var, var.name
+        for key, value in list(vars(c).items()):
+            if isinstance(value, ASTNode):
+                setattr(c, key, self.clone(value, prefix, renamed))
+            elif isinstance(value, list):
+                setattr(c, key, [self.clone(x, prefix, renamed) if isinstance(x, ASTNode) else x for x in value])
+        if isinstance(c, ValueNode) and c.kind == TokenType.ID and c.ref[0] == "var" and c.ref[1] in renamed:
+            c.ref = ("var", renamed[c.ref[1]])
+            c.value = c.ref[1].name
+        elif isinstance(c, AssignmentNode):
+            c.name = c.target.path() if isinstance(c.target, ChainNode) else c.target.value
+        elif isinstance(c, ExitNode):
+            c.name = c.target.value
+        return c
+
+    def inline(self, fi, stmts, stmt, call):
+        self.inlined += 1
+        prefix = f"{fi.name}${self.inlined}$"  # '$' cannot be in a source name, so nothing can collide with these
+        renamed, new = {}, []
+        for param, arg in zip(fi.node.params, call.args):
+            decl = self.declare(call, prefix + param.name, param.type_name, arg)
+            renamed[param.var] = decl.var
+            new.append(decl)
+        for s in fi.node.body[:-1]:
+            new.append(self.clone(s, prefix, renamed))
+        value = self.clone(fi.node.body[-1].expr, prefix, renamed)
+        i = next(i for i, x in enumerate(stmts) if x is stmt)
+        if isinstance(stmt, CallStatementNode) and stmt.call is call:
+            new.append(self.declare(call, prefix + "result", fi.result, value))
+            stmts[i:i + 1] = new
+            return
+        if value.type != fi.result:  # a 🔙 converts to the result type: a variable of that type keeps the conversion
+            decl = self.declare(call, prefix + "result", fi.result, value)
+            new.append(decl)
+            value = ValueNode(Token(TokenType.ID, decl.name, call.line, call.col))
+            value.ref, value.type = ("var", decl.var), fi.result
+        replace_node(stmt, call, value)
+        stmts[i:i] = new
+
+
+# ===================================================================
 # Code generation (llvmlite builder)
 # ===================================================================
 
@@ -1847,27 +2214,34 @@ class CodeGen:
         return ptr if want_ptr else b.load(ptr)
 
 
-def compile_program(source):
+def check(source, optimize):
     tree = Parser(Lexer(source)).parse_program()
     analyzer = Analyzer()
     analyzer.check_program(tree)
-    return str(CodeGen(analyzer).generate(tree))
+    if optimize:
+        Optimizer(tree, analyzer).run()
+    return tree, analyzer
 
 
-USAGE = "usage: python3 compiler.py input.txt output.ll\n       python3 compiler.py --ast input.txt\n"
+USAGE = ("usage: python3 compiler.py [--optimize] input.txt output.ll\n"
+         "       python3 compiler.py [--optimize] --ast input.txt\n")
 
 
 def main(argv):
-    if len(argv) != 3:
+    optimize, ast = "--optimize" in argv[1:], "--ast" in argv[1:]
+    files = [a for a in argv[1:] if a not in ("--optimize", "--ast")]
+    if len(files) != (1 if ast else 2):
         sys.stderr.write(USAGE)
         return 2
     try:
-        if argv[1] == "--ast":
-            tree = Parser(Lexer(read_source(argv[2]))).parse_program()
+        source = read_source(files[0])
+        if ast:
+            tree = check(source, True)[0] if optimize else Parser(Lexer(source)).parse_program()
             output = "\n".join(tree.dump()) + "\n"
             sys.stdout.buffer.write(output.encode("utf-8"))
             return 0
-        ir_text = compile_program(read_source(argv[1]))
+        tree, analyzer = check(source, optimize)
+        ir_text = str(CodeGen(analyzer).generate(tree))
     except CompileError as e:
         report(e)
         return 1
@@ -1878,10 +2252,10 @@ def main(argv):
         sys.stderr.write(f"compilation error: internal compiler error: {type(e).__name__}: {e}\n")
         return 1
     try:
-        with open(argv[2], "w", encoding="utf-8") as f:
+        with open(files[1], "w", encoding="utf-8") as f:
             f.write(ir_text)
     except OSError as e:
-        sys.stderr.write(f"compilation error: cannot write '{argv[2]}': {e.strerror}\n")
+        sys.stderr.write(f"compilation error: cannot write '{files[1]}': {e.strerror}\n")
         return 1
     return 0
 

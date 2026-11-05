@@ -1,0 +1,19 @@
+🏰 Box
+{
+  🙂 🐒 x
+  🛠️ 🐒 used()
+  {
+    🔙 x
+  }
+  🛠️ 🐒 unused()
+  {
+    🔙 lonely(x)
+  }
+}
+⚙️ 🐒 lonely(🐒 v)
+{
+  🔙 v
+}
+☹️ Box b => Box(4)
+🖨️(b.used())
+🖨️(b)

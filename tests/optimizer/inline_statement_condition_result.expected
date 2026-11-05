@@ -1,0 +1,3 @@
+0
+zero
+runtime error: line 12:5: an i64 value does not fit in i32

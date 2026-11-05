@@ -1,0 +1,46 @@
+ProgramNode @1:1
+  FunctionNode @18:1 (name: other, result: i32, params: 1)
+    ParamNode @18:12 (type: i32, name: x)
+    Body
+      ReturnNode @20:3
+        ValueNode @20:5 (ID: x)
+  DeclAndAssignNode @22:4 (modifier: immutable, mutable: false, type: i32, name: run$2$x)
+    ValueNode @22:8 (INT: 5)
+  DeclAndAssignNode @13:3 (modifier: mutable, mutable: true, type: i32, name: run$2$result)
+    BinOpNode @13:19 (op: *)
+      ValueNode @13:17 (ID: run$2$x)
+      ValueNode @13:22 (INT: 2)
+  DeclAndAssignNode @14:3 (modifier: mutable, mutable: true, type: i32, name: run$2$limit)
+    ValueNode @14:16 (INT: 10)
+  DeclAndAssignNode @15:14 (modifier: immutable, mutable: false, type: i32, name: run$2$clamp$1$x)
+    BinOpNode @15:27 (op: +)
+      ValueNode @15:20 (ID: run$2$result)
+      ValueNode @15:29 (INT: 1)
+  DeclAndAssignNode @15:14 (modifier: immutable, mutable: false, type: i32, name: run$2$clamp$1$limit)
+    ValueNode @15:32 (ID: run$2$limit)
+  DeclAndAssignNode @3:3 (modifier: mutable, mutable: true, type: i32, name: run$2$clamp$1$result)
+    ValueNode @3:17 (ID: run$2$clamp$1$x)
+  IfNode @4:3
+    Condition
+      BinOpNode @4:7 (op: ==)
+        ValueNode @4:5 (ID: run$2$clamp$1$x)
+        BinOpNode @4:15 (op: +)
+          ValueNode @4:9 (ID: run$2$clamp$1$limit)
+          ValueNode @4:17 (INT: 1)
+    Then
+      AssignmentNode @6:5 (name: run$2$clamp$1$result)
+        ValueNode @6:15 (ID: run$2$clamp$1$limit)
+      PrintNode @7:5
+        StringNode @7:8 (text: "clamped")
+  DeclAndAssignNode @15:3 (modifier: mutable, mutable: true, type: i32, name: run$2$out)
+    ValueNode @9:5 (ID: run$2$clamp$1$result)
+  PrintNode @22:1
+    BinOpNode @16:9 (op: +)
+      ValueNode @16:5 (ID: run$2$out)
+      ValueNode @16:11 (ID: run$2$result)
+  PrintNode @23:1
+    CallNode @23:4 (name: other, args: 1)
+      ValueNode @23:10 (INT: 1)
+  PrintNode @24:1
+    CallNode @24:4 (name: other, args: 1)
+      ValueNode @24:10 (INT: 2)

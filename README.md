@@ -1,4 +1,4 @@
-# Emoji language — Stage 3 (encapsulation)
+# Emoji language — Stage 3 (encapsulation, optimizer)
 
 A small statically-typed language written with emojis. The compiler is a hand-written byte-level lexer (a state
 machine), a recursive-descent parser (one function per grammar rule), a semantic pass with a symbol table, and an
@@ -397,6 +397,99 @@ in `main` writes the same index directly, which is why a private field can be se
 print of `acc` emits `Account{` and then one `gep`, `load` and `printf` for `id` at index 1 only: index 0 is skipped,
 so the private balance never reaches `printf`.
 
+## The optimizer (`--optimize`)
+
+`--optimize`, anywhere on the command line, runs three transformations of the checked tree before code generation.
+They repeat until none of them finds anything, because each one opens work for the others. With `--ast` the
+program is also checked, and the tree after the optimizer is printed. Errors are the same with and without the flag.
+
+### Unused variables
+
+- A variable is removed, with all its assignments, when nothing reads it. This repeats: removing `c => b` can leave
+  `b` unread. Variables are matched by their declaration, not their name, so a shadowing variable and the one it
+  hides are decided separately (`unused_var_chain`, `unused_var_shadowing`).
+- A write to a field of an object is an assignment to that object (`p.x => 3`, `unused_var_object`). `📖(x)`
+  and a member call on an object count as reads, so they stay.
+- An expression that calls a function is never dropped. `🙂 🐒 a => f(1)` becomes the call statement `f(1)`. A
+  bigger expression such as `f(1) ➕ 1` keeps its variable (`unused_var_keeps_calls_and_read`).
+- **An expression that can stop the program also stays.** `big ➕ 1` can end in the overflow error and an i64 stored
+  into an i32 can end in the range error, so removing them could change what the program prints. Arithmetic is
+  dropped only when it is built from literals and `🚫` constants and does not overflow. If one statement of a
+  variable has to stay, the whole variable stays.
+
+### Unused functions
+
+A function is kept only if the top-level code reaches it through calls. So a body that goes away takes the functions
+only it called, and two functions that call only each other are removed too (`unused_fn_chain`). This covers member
+functions as well; the fields of a structure never change (`unused_fn_member`).
+
+### Inlining
+
+A function called exactly once is replaced at its call. Each parameter becomes a `☹️` local initialised with the
+argument, the rest of the body follows, and the value of its `🔙` stands where the call stood. If that value has
+another type than the function's result, a local of the result type holds it, so the conversion still happens. A call
+used as a statement leaves a `name$N$result` local, which the unused-variable pass then removes or reduces. Locals
+are renamed `function$N$name`: `$` cannot be in a source name, so nothing can collide. The function is then removed
+as unused (`inline_simple`, `inline_renames_locals`, `inline_nested_calls`, `inline_statement_condition_result`).
+
+**Inlined:** a plain function that is called once and has exactly one `🔙`, as the last statement of its body. The
+body may hold anything else, including `🤔` blocks and `🚪`.
+
+**Left alone** (`inline_left_alone`, `inline_keeps_evaluation_order`):
+
+- a recursive function, directly or through other functions;
+- a body with a `🔙` inside a block, such as an early return in an `🤔`: there is no single value to put at the call;
+- a member function: it needs its object;
+- a call that cannot move. The body runs before the statement that held the call, so everything evaluated earlier in
+  that statement must not notice. In `counter ➕ bump()` the global `counter` would be read after `bump` changed it.
+  In `show(1) ➕ second()` the prints would swap. In `a ✖️ b ➕ f()` the `✖️` could overflow first. Literals, locals and
+  parameters may stand before the call; globals, fields, calls and arithmetic may not.
+
+### Before and after
+
+`tests/optimizer/inline_simple` is `🙂 🐒 total => add(2, 3)` with `add` returning `a ➕ b`. Without `--optimize`,
+`main` calls the function:
+
+```llvm
+define i32 @"fn_add"(i32 %"a", i32 %"b")
+{
+entry:
+  %"b.addr" = alloca i32
+  %"a.addr" = alloca i32
+  store i32 %"a", i32* %"a.addr"
+  store i32 %"b", i32* %"b.addr"
+  ...
+  ret i32 %".11"
+}
+
+define i32 @"main"()
+{
+entry:
+  %".2" = call i32 @"fn_add"(i32 2, i32 3)
+  store i32 %".2", i32* @"g.total"
+```
+
+With `--optimize`, `@fn_add` is gone, the parameters are locals of `main`, and the addition is done in place:
+
+```llvm
+define i32 @"main"()
+{
+entry:
+  %"add$1$b" = alloca i32
+  %"add$1$a" = alloca i32
+  store i32 2, i32* %"add$1$a"
+  store i32 3, i32* %"add$1$b"
+  %"add$1$a.1" = load i32, i32* %"add$1$a"
+  %"add$1$b.1" = load i32, i32* %"add$1$b"
+  %".4" = call {i32, i1} @"llvm.sadd.with.overflow.i32"(i32 %"add$1$a.1", i32 %"add$1$b.1")
+  ...
+  %".9" = extractvalue {i32, i1} %".4", 0
+  store i32 %".9", i32* @"g.total"
+```
+
+The overflow check moved with the body and still reports the position inside `add`. The module goes from 61 to 52
+lines.
+
 ## Build and run
 
 Requirements: Python 3.8+, `llvmlite` (in the `~/lcd` virtual environment) and LLVM (`lli`, or `llc` and `clang`).
@@ -407,6 +500,8 @@ python3 compiler.py input.txt output.ll      # compile: writes the module the bu
 lli output.ll                                # run it ...
 llc -filetype=obj -relocation-model=pic output.ll -o output.o && clang output.o -o program && ./program   # ... or build a binary
 python3 compiler.py --ast input.txt          # print the AST (front end only, no semantic pass)
+python3 compiler.py --optimize input.txt output.ll   # compile through the optimizer
+python3 compiler.py --optimize --ast input.txt       # check, optimize and print the tree
 ```
 
 A program that reads input takes it from standard input: `lli output.ll < input.in`.
@@ -459,7 +554,9 @@ Runtime errors (arithmetic overflow, an i64 that does not fit an i32, input that
      signatures and whether they are mutating — a fixed point over the "calls a mutating member" relation; each
      field and member function also records whether it is private).
    It annotates the AST (types, resolved names, field indexes) for the code generator.
-4. **Code generation** (`CodeGen`) with the `llvmlite.ir` builder; the only IR text written is `str(module)`:
+4. **Optimizer** (`Optimizer`, only with `--optimize`): tree transformations between the semantic pass and code
+   generation. It removes unused functions and variables and inlines functions called once.
+5. **Code generation** (`CodeGen`) with the `llvmlite.ir` builder; the only IR text written is `str(module)`:
    - every Stage 1 construct: globals for top-level variables, `alloca`s for locals, `if`/`else` as basic blocks
      and a conditional branch, i32/i64/i1 with `sext` / checked `trunc`, arithmetic through
      `llvm.s{add,sub,mul}.with.overflow` with a branch to the runtime error;
@@ -478,6 +575,7 @@ Runtime errors (arithmetic overflow, an i64 that does not fit an i32, input that
 ```
 source ~/lcd/bin/activate
 python3 run_tests.py              # run every .ll with lli
+python3 run_tests.py --optimize   # the same tests compiled through the optimizer
 python3 run_tests.py --native     # build every .ll with llc + clang and run the binary
 python3 run_tests.py member read  # only the tests whose name contains 'member' or 'read'
 python3 run_tests.py --update-ast # rewrite the .ast files of valid tests after a deliberate AST change
@@ -492,6 +590,15 @@ python3 run_tests.py --update-ast # rewrite the .ast files of valid tests after 
   non-zero, stdout is empty and no `.ll` file is written. When `NAME.ast` exists (all `sem_` tests), the program
   must still parse and print that AST: the error is found by the semantic pass.
 
+- `tests/optimizer/NAME.txt` — a program that shows one transformation. It must print `NAME.expected` in both
+  modes below, and `NAME.in` is its input when it exists. With `--optimize`, `--optimize --ast` must also equal
+  `NAME.ast`.
+
+`python3 run_tests.py` never uses the optimizer. `python3 run_tests.py --optimize` compiles every test in all three
+folders through it, against the same expected files, so passing in both modes shows the optimizer changes no
+output and no error. `--optimize` goes after `run_tests.py`: placed before it, the flag would go to `python3`.
+`--native`, `--optimize` and name filters can be combined.
+
 The script prints `ok` / `FAIL` for every test, lists the failed ones at the end and exits non-zero if any fails.
 Generated files go to `build/`, which is not committed.
 
@@ -499,6 +606,7 @@ Generated files go to `build/`, which is not committed.
 |--------|-------|---------|
 | `tests/valid` | 56 | the 30 valid Stage 1 programs (now also compiled and run), 19 Stage 2 programs and 7 `encapsulation_` programs; 3 of them read input (`read_point`, `read_i32_and_i64`, `encapsulation_read_into_private`) |
 | `tests/errors` | 109 | `lex_` lexical, `syn_` syntax, `sem_` semantic errors: 40 from Stage 1 (with the moved literal test), 56 from Stage 2, and 13 `encapsulation_` errors |
+| `tests/optimizer` | 12 | `unused_var_` (4), `unused_fn_` (2) and `inline_` (6) programs with the tree after `--optimize` |
 
 The Stage 1 test `literal_beyond_i32_still_parses` is now `tests/errors/sem_literal_beyond_i32_still_parses`: it
 still parses (its `.ast` is the Stage 1 AST) and the semantic pass rejects the out-of-range i32 literal.
@@ -506,9 +614,8 @@ still parses (its `.ast` is the Stage 1 AST) and the semantic pass rejects the o
 ## Project layout
 
 ```
-compiler.py        lexer, parser, AST, semantic pass, LLVM IR generation, command line
+compiler.py        lexer, parser, AST, semantic pass, optimizer, LLVM IR generation, command line
 grammar.ebnf       the grammar
 run_tests.py       test runner
-tests/             valid/ and errors/ test cases
+tests/             valid/, errors/ and optimizer/ test cases
 ```
-

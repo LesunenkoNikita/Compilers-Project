@@ -1,0 +1,29 @@
+⚙️ 🐒 helper(🐒 v)
+{
+  🔙 v ➕ 1
+}
+⚙️ 🐒 middle(🐒 v)
+{
+  🔙 helper(v)
+}
+⚙️ 🐒 top(🐒 v)
+{
+  🔙 middle(v)
+}
+⚙️ boo!👻 even(🐒 n)
+{
+  🤔 n ✅ 0
+  {
+    🔙 👍
+  }
+  🔙 odd(n ➖ 1)
+}
+⚙️ boo!👻 odd(🐒 n)
+{
+  🤔 n ✅ 0
+  {
+    🔙 👎
+  }
+  🔙 even(n ➖ 1)
+}
+🖨️("no calls")
