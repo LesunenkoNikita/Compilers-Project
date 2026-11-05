@@ -1,0 +1,12 @@
+ProgramNode @1:1
+  FunctionNode @1:1 (name: add, result: i32, params: 2)
+    ParamNode @1:10 (type: i32, name: a)
+    ParamNode @1:15 (type: i32, name: b)
+    Body
+      ReturnNode @3:3
+        BinOpNode @3:7 (op: +)
+          ValueNode @3:5 (ID: a)
+          ValueNode @3:9 (ID: b)
+  PrintNode @5:1
+    CallNode @5:4 (name: add, args: 1)
+      ValueNode @5:8 (INT: 1)

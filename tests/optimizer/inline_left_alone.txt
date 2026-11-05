@@ -1,0 +1,28 @@
+⚙️ 🐒 countdown(🐒 n)
+{
+  🤔 n ✅ 0
+  {
+    🔙 0
+  }
+  🔙 countdown(n ➖ 1)
+}
+⚙️ 🐒 pick(boo!👻 first)
+{
+  🤔 first
+  {
+    🔙 1
+  }
+  🔙 2
+}
+🏰 Box
+{
+  🙂 🐒 x
+  🛠️ 🐒 get()
+  {
+    🔙 x
+  }
+}
+☹️ Box b => Box(9)
+🖨️(countdown(3))
+🖨️(pick(👍))
+🖨️(b.get())

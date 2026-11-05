@@ -1,0 +1,9 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Tag, fields: 1, member functions: 1)
+    FieldNode @3:3 (modifier: immutable, mutable: false, type: i32, name: id, default: false)
+    MemberFunctionNode @4:3 (struct: Tag, name: reset, result: i32, params: 0)
+      Body
+        AssignmentNode @6:5 (name: id)
+          ValueNode @6:11 (INT: 0)
+        ReturnNode @7:5
+          ValueNode @7:7 (ID: id)

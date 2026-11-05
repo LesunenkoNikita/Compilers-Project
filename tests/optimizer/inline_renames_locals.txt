@@ -1,0 +1,24 @@
+⚙️ 🐒 clamp(🐒 x, 🐒 limit)
+{
+  🙂 🐒 result => x
+  🤔 x ✅ limit ➕ 1
+  {
+    result => limit
+    🖨️("clamped")
+  }
+  🔙 result
+}
+⚙️ 🐒 run(🐒 x)
+{
+  🙂 🐒 result => x ✖️ 2
+  🙂 🐒 limit => 10
+  🙂 🐒 out => clamp(result ➕ 1, limit)
+  🔙 out ➕ result
+}
+⚙️ 🐒 other(🐒 x)
+{
+  🔙 x
+}
+🖨️(run(5))
+🖨️(other(1))
+🖨️(other(2))

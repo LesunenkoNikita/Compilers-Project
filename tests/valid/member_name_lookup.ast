@@ -1,0 +1,50 @@
+ProgramNode @1:1
+  DeclAndAssignNode @1:1 (modifier: mutable, mutable: true, type: i32, name: x)
+    ValueNode @1:10 (INT: 1000)
+  DeclAndAssignNode @2:1 (modifier: mutable, mutable: true, type: i32, name: g)
+    ValueNode @2:10 (INT: 7)
+  StructNode @3:1 (name: Box, fields: 1, member functions: 4)
+    FieldNode @5:3 (modifier: mutable, mutable: true, type: i32, name: x, default: false)
+    MemberFunctionNode @6:3 (struct: Box, name: fieldX, result: i32, params: 0)
+      Body
+        ReturnNode @8:5
+          ValueNode @8:7 (ID: x)
+    MemberFunctionNode @10:3 (struct: Box, name: paramX, result: i32, params: 1)
+      ParamNode @10:15 (type: i32, name: x)
+      Body
+        ReturnNode @12:5
+          ValueNode @12:7 (ID: x)
+    MemberFunctionNode @14:3 (struct: Box, name: localX, result: i32, params: 0)
+      Body
+        DeclAndAssignNode @16:5 (modifier: immutable, mutable: false, type: i32, name: x)
+          ValueNode @16:15 (INT: 3)
+        ReturnNode @17:5
+          ValueNode @17:7 (ID: x)
+    MemberFunctionNode @19:3 (struct: Box, name: globalG, result: i32, params: 0)
+      Body
+        ReturnNode @21:5
+          BinOpNode @21:9 (op: +)
+            ValueNode @21:7 (ID: g)
+            ValueNode @21:11 (ID: x)
+  DeclAndAssignNode @24:1 (modifier: immutable, mutable: false, type: Box, name: b)
+    CallNode @24:13 (name: Box, args: 1)
+      ValueNode @24:17 (INT: 42)
+  PrintNode @25:1
+    ChainNode @25:4 (path: b.fieldX(), ends in member call: true)
+      ValueNode @25:4 (ID: b)
+      MemberCallStepNode @25:6 (member function: fieldX, args: 0)
+  PrintNode @26:1
+    ChainNode @26:4 (path: b.paramX(), ends in member call: true)
+      ValueNode @26:4 (ID: b)
+      MemberCallStepNode @26:6 (member function: paramX, args: 1)
+        ValueNode @26:13 (INT: 5)
+  PrintNode @27:1
+    ChainNode @27:4 (path: b.localX(), ends in member call: true)
+      ValueNode @27:4 (ID: b)
+      MemberCallStepNode @27:6 (member function: localX, args: 0)
+  PrintNode @28:1
+    ChainNode @28:4 (path: b.globalG(), ends in member call: true)
+      ValueNode @28:4 (ID: b)
+      MemberCallStepNode @28:6 (member function: globalG, args: 0)
+  PrintNode @29:1
+    ValueNode @29:4 (ID: x)

@@ -1,0 +1,10 @@
+🏰 Point
+{
+  🙂 🐒 x
+  🙂 🐒 y
+}
+🙂 Point p => Point(1, 2)
+p.x => 3
+🙂 Point q => Point(4, 5)
+q.y => 6
+🖨️(q)

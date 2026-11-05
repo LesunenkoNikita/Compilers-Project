@@ -1,0 +1,17 @@
+🏰 Point
+{
+  🙂 🐒 x
+  🙂 🐒 y
+  🛠️ 🐒 d2()
+  {
+    🔙 x ✖️ x ➕ y ✖️ y
+  }
+  🛠️ 🐒 shift(🐒 dx)
+  {
+    x => x ➕ dx
+    🔙 x
+  }
+}
+☹️ Point q => Point(3, 4)
+🖨️(q.d2())
+q.shift(1)

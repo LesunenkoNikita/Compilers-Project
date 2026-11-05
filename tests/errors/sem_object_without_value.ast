@@ -1,0 +1,24 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Point, fields: 2, member functions: 2)
+    FieldNode @3:3 (modifier: mutable, mutable: true, type: i32, name: x, default: false)
+    FieldNode @4:3 (modifier: mutable, mutable: true, type: i32, name: y, default: false)
+    MemberFunctionNode @5:3 (struct: Point, name: d2, result: i32, params: 0)
+      Body
+        ReturnNode @7:5
+          BinOpNode @7:14 (op: +)
+            BinOpNode @7:9 (op: *)
+              ValueNode @7:7 (ID: x)
+              ValueNode @7:12 (ID: x)
+            BinOpNode @7:18 (op: *)
+              ValueNode @7:16 (ID: y)
+              ValueNode @7:21 (ID: y)
+    MemberFunctionNode @9:3 (struct: Point, name: shift, result: i32, params: 1)
+      ParamNode @9:14 (type: i32, name: dx)
+      Body
+        AssignmentNode @11:5 (name: x)
+          BinOpNode @11:12 (op: +)
+            ValueNode @11:10 (ID: x)
+            ValueNode @11:14 (ID: dx)
+        ReturnNode @12:5
+          ValueNode @12:7 (ID: x)
+  DeclarationNode @15:1 (modifier: mutable, mutable: true, type: Point, name: p)

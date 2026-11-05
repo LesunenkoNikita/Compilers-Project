@@ -1,0 +1,4 @@
+ProgramNode @1:1
+  DeclAndAssignNode @1:1 (modifier: mutable, mutable: true, type: i32, name: code)
+    ValueNode @1:13 (INT: 0)
+  ExitNode @2:1 (name: code)

@@ -1,0 +1,18 @@
+🏰 Account
+{
+  🔒 🙂 🦍 balance
+  ☹️ 🐒 id
+  🛠️ 🦍 getBalance()
+  {
+    🔙 balance
+  }
+  🛠️ 🦍 deposit(🦍 amount)
+  {
+    balance => balance ➕ amount
+    🔙 balance
+  }
+}
+🙂 Account acc => Account(100, 7)
+acc.deposit(50)
+🖨️(acc.getBalance())
+🖨️(acc.id)

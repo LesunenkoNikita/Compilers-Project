@@ -1,0 +1,30 @@
+ProgramNode @1:1
+  FunctionNode @1:1 (name: twice, result: i32, params: 1)
+    ParamNode @1:12 (type: i32, name: v)
+    Body
+      ReturnNode @3:3
+        BinOpNode @3:7 (op: *)
+          ValueNode @3:5 (ID: v)
+          ValueNode @3:10 (INT: 2)
+  DeclAndAssignNode @5:1 (modifier: constant, mutable: false, type: i32, name: a)
+    ValueNode @5:10 (INT: 10)
+  DeclAndAssignNode @6:1 (modifier: constant, mutable: false, type: i32, name: b)
+    BinOpNode @6:17 (op: +)
+      BinOpNode @6:12 (op: *)
+        ValueNode @6:10 (ID: a)
+        ValueNode @6:15 (INT: 2)
+      ValueNode @6:19 (INT: 1)
+  DeclAndAssignNode @7:1 (modifier: immutable, mutable: false, type: i32, name: c)
+    CallNode @7:11 (name: twice, args: 1)
+      ValueNode @7:17 (ID: b)
+  DeclarationNode @8:1 (modifier: mutable, mutable: true, type: i32, name: d)
+  AssignmentNode @9:1 (name: d)
+    BinOpNode @9:8 (op: -)
+      ValueNode @9:6 (ID: c)
+      ValueNode @9:10 (ID: a)
+  PrintNode @10:1
+    ValueNode @10:4 (ID: b)
+  PrintNode @11:1
+    ValueNode @11:4 (ID: c)
+  PrintNode @12:1
+    ValueNode @12:4 (ID: d)

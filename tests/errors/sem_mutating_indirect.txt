@@ -1,0 +1,24 @@
+🏰 Point
+{
+  🙂 🐒 x
+  🙂 🐒 y
+  🛠️ 🐒 d2()
+  {
+    🔙 x ✖️ x ➕ y ✖️ y
+  }
+  🛠️ 🐒 shift(🐒 dx)
+  {
+    x => x ➕ dx
+    🔙 x
+  }
+}
+🏰 Pair
+{
+  🙂 Point a
+  🛠️ 🐒 moveA()
+  {
+    🔙 a.shift(1)
+  }
+}
+☹️ Pair pr => Pair(Point(0, 0))
+pr.moveA()

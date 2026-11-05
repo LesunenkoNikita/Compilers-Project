@@ -1,0 +1,22 @@
+ProgramNode @1:1
+  DeclarationNode @1:1 (modifier: mutable, mutable: true, type: i32, name: a)
+  DeclarationNode @2:1 (modifier: mutable, mutable: true, type: i64, name: b)
+  ReadNode @3:1 (target: a)
+    ValueNode @3:3 (ID: a)
+  ReadNode @4:1 (target: b)
+    ValueNode @4:3 (ID: b)
+  PrintNode @5:1
+    BinOpNode @5:6 (op: +)
+      ValueNode @5:4 (ID: a)
+      ValueNode @5:8 (ID: b)
+  IfNode @6:1
+    Condition
+      BinOpNode @6:5 (op: ==)
+        ValueNode @6:3 (ID: a)
+        ValueNode @6:7 (ID: b)
+    Then
+      PrintNode @8:3
+        StringNode @8:6 (text: "equal")
+    Else
+      PrintNode @12:3
+        StringNode @12:6 (text: "different")

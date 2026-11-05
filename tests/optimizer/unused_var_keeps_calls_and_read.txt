@@ -1,0 +1,11 @@
+⚙️ 🐒 noisy(🐒 v)
+{
+  🖨️(v)
+  🔙 v
+}
+🙂 🐒 first => noisy(1)
+🙂 🐒 second => noisy(2) ➕ 1
+🙂 🐒 third
+📖(third)
+🙂 🐒 big => 2147483647
+🙂 🐒 risky => big ➕ 1

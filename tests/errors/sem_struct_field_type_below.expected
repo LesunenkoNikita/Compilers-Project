@@ -1,0 +1,1 @@
+compilation error: line 3:5: Structure 'Dot' must be declared above structure 'Line' to be the type of a field

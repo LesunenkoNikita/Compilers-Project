@@ -1,0 +1,64 @@
+Player 1, enter digit 1 of the code:
+A digit is a number from 0 to 9. Try again.
+Player 1, enter digit 1 of the code:
+Player 1, enter digit 2 of the code:
+Player 1, enter digit 3 of the code:
+Player 1, enter digit 4 of the code:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The safe is closed. Player 2, you have 10 tries to guess the code.
+Tries left: 10. Enter 4 digits with spaces between them, like 1 2 3 4:
+Digit 1 is at position 1
+Tries left: 9. Enter 4 digits with spaces between them, like 1 2 3 4:
+Digit 2 is at position 2
+Tries left: 8. Enter 4 digits with spaces between them, like 1 2 3 4:
+Digit 2 is in the code, but not at position 1
+Digit 1 is in the code, but not at position 2
+Tries left: 7. Enter 4 digits with spaces between them, like 1 2 3 4:
+The digits of this guess are not in the code.
+Tries left: 6. Enter 4 digits with spaces between them, like 1 2 3 4:
+Each entry must be a digit from 0 to 9. Try again:
+Digit 1 is at position 1
+Digit 2 is at position 2
+Digit 4 is in the code, but not at position 3
+Digit 3 is in the code, but not at position 4
+Tries left: 5. Enter 4 digits with spaces between them, like 1 2 3 4:
+The safe has been opened! You take 9999 coins with you.

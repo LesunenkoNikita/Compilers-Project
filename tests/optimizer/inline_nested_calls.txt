@@ -1,0 +1,19 @@
+⚙️ 🐒 inner(🐒 v)
+{
+  🔙 v ➕ 1
+}
+⚙️ 🐒 outer(🐒 v)
+{
+  🙂 🐒 w => v ✖️ 2
+  🔙 inner(w)
+}
+⚙️ Pair makePair(🐒 v)
+{
+  🔙 Pair(v, outer(v))
+}
+🏰 Pair
+{
+  🙂 🐒 left
+  🙂 🐒 right
+}
+🖨️(makePair(3).right)

@@ -1,0 +1,49 @@
+⚙️ 🐒 sign(🐒 n)
+{
+  🤔 n ✅ 0
+  {
+    🔙 0
+  }
+  🤔 n ✅ 0 ➖ 0
+  {
+    🖨️("never here")
+  }
+  🔙 1
+}
+⚙️ boo!👻 contains(🐒 a, 🐒 b, 🐒 x)
+{
+  🤔 a ✅ x
+  {
+    🔙 👍
+  }
+  🤨
+  {
+    🤔 b ✅ x
+    {
+      🔙 👍
+    }
+    🤨
+    {
+      🔙 👎
+    }
+  }
+}
+🏰 Limit
+{
+  🙂 🐒 max
+  🛠️ 🐒 clamp(🐒 v)
+  {
+    🤔 v ✅ max ➕ 1
+    {
+      🔙 max
+    }
+    🔙 v
+  }
+}
+🖨️(sign(0))
+🖨️(sign(7))
+🖨️(contains(1, 2, 2))
+🖨️(contains(1, 2, 3))
+☹️ Limit lim => Limit(10)
+🖨️(lim.clamp(11))
+🖨️(lim.clamp(4))

@@ -1,0 +1,8 @@
+⚙️ 🐒 pick(boo!👻 first)
+{
+  🤔 first
+  {
+    🔙 👍
+  }
+  🔙 2
+}

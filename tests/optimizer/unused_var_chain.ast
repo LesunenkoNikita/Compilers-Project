@@ -1,0 +1,5 @@
+ProgramNode @1:1
+  DeclAndAssignNode @6:1 (modifier: immutable, mutable: false, type: i32, name: kept)
+    ValueNode @6:14 (INT: 7)
+  PrintNode @7:1
+    ValueNode @7:4 (ID: kept)

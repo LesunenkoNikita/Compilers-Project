@@ -1,0 +1,19 @@
+🏰 Pair
+{
+  🔓 🙂 🐒 left
+  🙂 🐒 right
+  🔓 🛠️ 🐒 sum()
+  {
+    🔙 left ➕ right
+  }
+  🛠️ 🐒 diff()
+  {
+    🔙 left ➖ right
+  }
+}
+🙂 Pair p => Pair(5, 3)
+p.left => 10
+p.right => 4
+🖨️(p.sum())
+🖨️(p.diff())
+🖨️(p)

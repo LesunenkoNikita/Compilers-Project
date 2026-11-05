@@ -1,3 +1,0 @@
-ProgramNode @1:1
-  DeclAndAssignNode @1:1 (modifier: immutable, mutable: false, type: i64, name: id)
-    ValueNode @1:12 (INT: 42)

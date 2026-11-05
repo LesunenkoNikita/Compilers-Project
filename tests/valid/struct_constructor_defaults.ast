@@ -1,0 +1,42 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Point, fields: 2, member functions: 0)
+    FieldNode @3:3 (modifier: mutable, mutable: true, type: i32, name: x, default: false)
+    FieldNode @4:3 (modifier: mutable, mutable: true, type: i32, name: y, default: false)
+  StructNode @6:1 (name: Counter, fields: 3, member functions: 0)
+    FieldNode @8:3 (modifier: mutable, mutable: true, type: i64, name: value, default: true)
+      ValueNode @8:16 (INT: 10)
+    FieldNode @9:3 (modifier: immutable, mutable: false, type: bool, name: enabled, default: false)
+    FieldNode @10:3 (modifier: constant, mutable: false, type: i32, name: limit, default: true)
+      ValueNode @10:16 (INT: 99)
+  FunctionNode @12:1 (name: mirror, result: Point, params: 1)
+    ParamNode @12:17 (type: Point, name: p)
+    Body
+      ReturnNode @14:3
+        CallNode @14:5 (name: Point, args: 2)
+          ChainNode @14:11 (path: p.y, ends in member call: false)
+            ValueNode @14:11 (ID: p)
+            FieldStepNode @14:13 (field: y)
+          ChainNode @14:16 (path: p.x, ends in member call: false)
+            ValueNode @14:16 (ID: p)
+            FieldStepNode @14:18 (field: x)
+  DeclAndAssignNode @16:1 (modifier: mutable, mutable: true, type: Point, name: a)
+    CallNode @16:14 (name: Point, args: 2)
+      ValueNode @16:20 (INT: 1)
+      ValueNode @16:23 (INT: 2)
+  DeclAndAssignNode @17:1 (modifier: immutable, mutable: false, type: Point, name: b)
+    CallNode @17:15 (name: mirror, args: 1)
+      ValueNode @17:22 (ID: a)
+  PrintNode @18:1
+    ValueNode @18:4 (ID: a)
+  PrintNode @19:1
+    ValueNode @19:4 (ID: b)
+  PrintNode @20:1
+    CallNode @20:4 (name: Counter, args: 1)
+      ValueNode @20:12 (BOOL: true)
+  PrintNode @21:1
+    ChainNode @21:4 (path: mirror().x, ends in member call: false)
+      CallNode @21:4 (name: mirror, args: 1)
+        CallNode @21:11 (name: Point, args: 2)
+          ValueNode @21:17 (INT: 5)
+          ValueNode @21:20 (INT: 6)
+      FieldStepNode @21:24 (field: x)

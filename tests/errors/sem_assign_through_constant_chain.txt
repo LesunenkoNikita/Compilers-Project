@@ -1,0 +1,22 @@
+🏰 Point
+{
+  🙂 🐒 x
+  🙂 🐒 y
+  🛠️ 🐒 d2()
+  {
+    🔙 x ✖️ x ➕ y ✖️ y
+  }
+  🛠️ 🐒 shift(🐒 dx)
+  {
+    x => x ➕ dx
+    🔙 x
+  }
+}
+🏰 Circle
+{
+  ☹️ Point center
+  🙂 🐒 radius
+}
+🙂 Circle c => Circle(Point(1, 2), 3)
+c.radius => 4
+c.center.x => 5

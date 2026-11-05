@@ -1,0 +1,10 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Box, fields: 1, member functions: 1)
+    FieldNode @3:3 (modifier: mutable, mutable: true, type: i32, name: x, default: false)
+    MemberFunctionNode @4:3 (struct: Box, name: setX, result: i32, params: 1)
+      ParamNode @4:13 (type: i32, name: x)
+      Body
+        AssignmentNode @6:5 (name: x)
+          ValueNode @6:10 (INT: 5)
+        ReturnNode @7:5
+          ValueNode @7:7 (ID: x)

@@ -1,0 +1,12 @@
+⚙️ 🐒 noisy(🐒 v)
+{
+  🖨️("inside")
+  🔙 v
+}
+⚙️ 🐒 quiet(🐒 v)
+{
+  🖨️("first")
+  🔙 v
+}
+🖨️("before ", noisy(1))
+🖨️(quiet(2), " after")

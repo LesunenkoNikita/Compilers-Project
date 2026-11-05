@@ -1,0 +1,46 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Point, fields: 1, member functions: 1)
+    FieldNode @3:3 (modifier: mutable, mutable: true, type: i32, name: x, default: false)
+    MemberFunctionNode @4:3 (struct: Point, name: shift, result: i32, params: 1)
+      ParamNode @4:14 (type: i32, name: d)
+      Body
+        AssignmentNode @6:5 (name: x)
+          BinOpNode @6:12 (op: +)
+            ValueNode @6:10 (ID: x)
+            ValueNode @6:14 (ID: d)
+        ReturnNode @7:5
+          ValueNode @7:7 (ID: x)
+  StructNode @10:1 (name: Circle, fields: 1, member functions: 2)
+    FieldNode @12:5 (modifier: mutable, mutable: true, type: Point, name: center, default: false, access: private)
+    MemberFunctionNode @13:3 (struct: Circle, name: move, result: i32, params: 1)
+      ParamNode @13:13 (type: i32, name: d)
+      Body
+        ReturnNode @15:5
+          ChainNode @15:7 (path: center.shift(), ends in member call: true)
+            ValueNode @15:7 (ID: center)
+            MemberCallStepNode @15:14 (member function: shift, args: 1)
+              ValueNode @15:20 (ID: d)
+    MemberFunctionNode @17:3 (struct: Circle, name: where, result: Point, params: 0)
+      Body
+        ReturnNode @19:5
+          ValueNode @19:7 (ID: center)
+  DeclAndAssignNode @22:1 (modifier: mutable, mutable: true, type: Circle, name: c)
+    CallNode @22:15 (name: Circle, args: 1)
+      CallNode @22:22 (name: Point, args: 1)
+        ValueNode @22:28 (INT: 1)
+  CallStatementNode @23:1
+    ChainNode @23:1 (path: c.move(), ends in member call: true)
+      ValueNode @23:1 (ID: c)
+      MemberCallStepNode @23:3 (member function: move, args: 1)
+        ValueNode @23:8 (INT: 4)
+  PrintNode @24:1
+    ChainNode @24:4 (path: c.where().x, ends in member call: false)
+      ValueNode @24:4 (ID: c)
+      MemberCallStepNode @24:6 (member function: where, args: 0)
+      FieldStepNode @24:14 (field: x)
+  PrintNode @25:1
+    ChainNode @25:4 (path: c.where(), ends in member call: true)
+      ValueNode @25:4 (ID: c)
+      MemberCallStepNode @25:6 (member function: where, args: 0)
+  PrintNode @26:1
+    ValueNode @26:4 (ID: c)

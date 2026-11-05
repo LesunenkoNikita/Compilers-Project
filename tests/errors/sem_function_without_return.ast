@@ -1,0 +1,5 @@
+ProgramNode @1:1
+  FunctionNode @1:1 (name: f, result: i32, params: 0)
+    Body
+      DeclAndAssignNode @3:3 (modifier: mutable, mutable: true, type: i32, name: x)
+        ValueNode @3:12 (INT: 1)

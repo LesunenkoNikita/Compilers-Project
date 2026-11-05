@@ -1,0 +1,46 @@
+ProgramNode @1:1
+  FunctionNode @1:1 (name: isEven, result: bool, params: 1)
+    ParamNode @1:17 (type: i32, name: n)
+    Body
+      DeclAndAssignNode @3:3 (modifier: mutable, mutable: true, type: bool, name: r)
+        ValueNode @3:16 (BOOL: true)
+      IfNode @4:3
+        Condition
+          BinOpNode @4:7 (op: !=)
+            ValueNode @4:5 (ID: n)
+            ValueNode @4:9 (INT: 0)
+        Then
+          AssignmentNode @6:5 (name: r)
+            CallNode @6:10 (name: isOdd, args: 1)
+              BinOpNode @6:18 (op: -)
+                ValueNode @6:16 (ID: n)
+                ValueNode @6:20 (INT: 1)
+      ReturnNode @8:3
+        ValueNode @8:5 (ID: r)
+  FunctionNode @10:1 (name: isOdd, result: bool, params: 1)
+    ParamNode @10:16 (type: i32, name: n)
+    Body
+      DeclAndAssignNode @12:3 (modifier: mutable, mutable: true, type: bool, name: r)
+        ValueNode @12:16 (BOOL: false)
+      IfNode @13:3
+        Condition
+          BinOpNode @13:7 (op: !=)
+            ValueNode @13:5 (ID: n)
+            ValueNode @13:9 (INT: 0)
+        Then
+          AssignmentNode @15:5 (name: r)
+            CallNode @15:10 (name: isEven, args: 1)
+              BinOpNode @15:19 (op: -)
+                ValueNode @15:17 (ID: n)
+                ValueNode @15:21 (INT: 1)
+      ReturnNode @17:3
+        ValueNode @17:5 (ID: r)
+  PrintNode @19:1
+    CallNode @19:4 (name: isEven, args: 1)
+      ValueNode @19:11 (INT: 10)
+  PrintNode @20:1
+    CallNode @20:4 (name: isOdd, args: 1)
+      ValueNode @20:10 (INT: 7)
+  PrintNode @21:1
+    CallNode @21:4 (name: isEven, args: 1)
+      ValueNode @21:11 (INT: 3)

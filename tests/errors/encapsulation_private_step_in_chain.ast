@@ -1,0 +1,14 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Inner, fields: 1, member functions: 0)
+    FieldNode @3:3 (modifier: mutable, mutable: true, type: i32, name: x, default: false)
+  StructNode @5:1 (name: Outer, fields: 1, member functions: 0)
+    FieldNode @7:5 (modifier: mutable, mutable: true, type: Inner, name: in, default: false, access: private)
+  DeclAndAssignNode @9:1 (modifier: mutable, mutable: true, type: Outer, name: o)
+    CallNode @9:14 (name: Outer, args: 1)
+      CallNode @9:20 (name: Inner, args: 1)
+        ValueNode @9:26 (INT: 1)
+  PrintNode @10:1
+    ChainNode @10:4 (path: o.in.x, ends in member call: false)
+      ValueNode @10:4 (ID: o)
+      FieldStepNode @10:6 (field: in)
+      FieldStepNode @10:9 (field: x)

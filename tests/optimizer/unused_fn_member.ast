@@ -1,0 +1,16 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Box, fields: 1, member functions: 1)
+    FieldNode @3:3 (modifier: mutable, mutable: true, type: i32, name: x, default: false)
+    MemberFunctionNode @4:3 (struct: Box, name: used, result: i32, params: 0)
+      Body
+        ReturnNode @6:5
+          ValueNode @6:7 (ID: x)
+  DeclAndAssignNode @17:1 (modifier: immutable, mutable: false, type: Box, name: b)
+    CallNode @17:13 (name: Box, args: 1)
+      ValueNode @17:17 (INT: 4)
+  PrintNode @18:1
+    ChainNode @18:4 (path: b.used(), ends in member call: true)
+      ValueNode @18:4 (ID: b)
+      MemberCallStepNode @18:6 (member function: used, args: 0)
+  PrintNode @19:1
+    ValueNode @19:4 (ID: b)

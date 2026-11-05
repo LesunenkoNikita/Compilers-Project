@@ -1,0 +1,10 @@
+🏰 Inner
+{
+  🙂 🐒 x
+}
+🏰 Outer
+{
+  🔒 🙂 Inner in
+}
+🙂 Outer o => Outer(Inner(1))
+🖨️(o.in.x)

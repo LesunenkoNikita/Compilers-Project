@@ -1,0 +1,8 @@
+🏰 Line
+{
+  🙂 Dot start
+}
+🏰 Dot
+{
+  🙂 🐒 x
+}

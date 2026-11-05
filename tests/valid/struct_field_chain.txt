@@ -1,0 +1,18 @@
+🏰 Point
+{
+  🙂 🐒 x
+  🙂 🐒 y
+}
+🏰 Circle
+{
+  🙂 Point center
+  ☹️ 🐒 radius
+}
+🙂 Circle c => Circle(Point(1, 2), 5)
+c.center.x => 10
+c.center => Point(c.center.x ➕ 1, c.radius)
+🙂 Point copy => c.center
+copy.y => 0
+🖨️(c.center.x)
+🖨️(c)
+🖨️(copy)

@@ -1,0 +1,25 @@
+ProgramNode @1:1
+  FunctionNode @1:1 (name: noisy, result: i32, params: 1)
+    ParamNode @1:12 (type: i32, name: v)
+    Body
+      PrintNode @3:3
+        ValueNode @3:6 (ID: v)
+      ReturnNode @4:3
+        ValueNode @4:5 (ID: v)
+  CallStatementNode @6:14
+    CallNode @6:14 (name: noisy, args: 1)
+      ValueNode @6:20 (INT: 1)
+  DeclAndAssignNode @7:1 (modifier: mutable, mutable: true, type: i32, name: second)
+    BinOpNode @7:24 (op: +)
+      CallNode @7:15 (name: noisy, args: 1)
+        ValueNode @7:21 (INT: 2)
+      ValueNode @7:26 (INT: 1)
+  DeclarationNode @8:1 (modifier: mutable, mutable: true, type: i32, name: third)
+  ReadNode @9:1 (target: third)
+    ValueNode @9:3 (ID: third)
+  DeclAndAssignNode @10:1 (modifier: mutable, mutable: true, type: i32, name: big)
+    ValueNode @10:12 (INT: 2147483647)
+  DeclAndAssignNode @11:1 (modifier: mutable, mutable: true, type: i32, name: risky)
+    BinOpNode @11:18 (op: +)
+      ValueNode @11:14 (ID: big)
+      ValueNode @11:20 (INT: 1)

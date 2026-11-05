@@ -1,0 +1,227 @@
+🏰 Digits
+{
+  🔒 ☹️ 🐒 first
+  🔒 ☹️ 🐒 second
+  🔒 ☹️ 🐒 third
+  🔒 ☹️ 🐒 fourth
+  🛠️ boo!👻 same(Digits other)
+  {
+    🤔 first ❎ other.first
+    {
+      🔙 👎
+    }
+    🤔 second ❎ other.second
+    {
+      🔙 👎
+    }
+    🤔 third ❎ other.third
+    {
+      🔙 👎
+    }
+    🔙 fourth ✅ other.fourth
+  }
+  🛠️ 🐒 at(🐒 position)
+  {
+    🤔 position ✅ 1
+    {
+      🔙 first
+    }
+    🤔 position ✅ 2
+    {
+      🔙 second
+    }
+    🤔 position ✅ 3
+    {
+      🔙 third
+    }
+    🔙 fourth
+  }
+}
+🏰 Safe
+{
+  🔒 ☹️ Digits code
+  🔒 🙂 🐒 tries => 10
+  🔒 🚫 🐒 coins => 9999
+  🔒 🙂 boo!👻 used1 => 👎
+  🔒 🙂 boo!👻 used2 => 👎
+  🔒 🙂 boo!👻 used3 => 👎
+  🔒 🙂 boo!👻 used4 => 👎
+  🔒 🛠️ boo!👻 isUsed(🐒 position)
+  {
+    🤔 position ✅ 1
+    {
+      🔙 used1
+    }
+    🤔 position ✅ 2
+    {
+      🔙 used2
+    }
+    🤔 position ✅ 3
+    {
+      🔙 used3
+    }
+    🔙 used4
+  }
+  🔒 🛠️ 🐒 setUsed(🐒 position, boo!👻 value)
+  {
+    🤔 position ✅ 1
+    {
+      used1 => value
+    }
+    🤔 position ✅ 2
+    {
+      used2 => value
+    }
+    🤔 position ✅ 3
+    {
+      used3 => value
+    }
+    🤔 position ✅ 4
+    {
+      used4 => value
+    }
+    🔙 position
+  }
+  🔒 🛠️ 🐒 claimExact(Digits guess, 🐒 position)
+  {
+    setUsed(position, code.at(position) ✅ guess.at(position))
+    🔙 position
+  }
+  🔒 🛠️ 🐒 findFree(🐒 digit, 🐒 position)
+  {
+    🤔 position ✅ 5
+    {
+      🔙 0
+    }
+    🤔 code.at(position) ✅ digit
+    {
+      🤔 isUsed(position) ✅ 👎
+      {
+        🔙 position
+      }
+    }
+    🔙 findFree(digit, position ➕ 1)
+  }
+  🔒 🛠️ 🐒 hintAt(Digits guess, 🐒 position)
+  {
+    ☹️ 🐒 digit => guess.at(position)
+    🤔 code.at(position) ✅ digit
+    {
+      🖨️("Digit ", digit, " is at position ", position)
+      🔙 1
+    }
+    ☹️ 🐒 free => findFree(digit, 1)
+    🤔 free ✅ 0
+    {
+      🔙 0
+    }
+    setUsed(free, 👍)
+    🖨️("Digit ", digit, " is in the code, but not at position ", position)
+    🔙 1
+  }
+  🛠️ boo!👻 tryGuess(Digits guess)
+  {
+    tries => tries ➖ 1
+    🤔 code.same(guess)
+    {
+      🔙 👍
+    }
+    claimExact(guess, 1)
+    claimExact(guess, 2)
+    claimExact(guess, 3)
+    claimExact(guess, 4)
+    ☹️ 🐒 hints => hintAt(guess, 1) ➕ hintAt(guess, 2) ➕ hintAt(guess, 3) ➕ hintAt(guess, 4)
+    🤔 hints ✅ 0
+    {
+      🖨️("The digits of this guess are not in the code.")
+    }
+    🔙 👎
+  }
+  🛠️ 🐒 triesLeft()
+  {
+    🔙 tries
+  }
+  🛠️ 🐒 prize()
+  {
+    🔙 coins
+  }
+}
+⚙️ boo!👻 isDigit(🐒 value, 🐒 candidate)
+{
+  🤔 candidate ✅ 10
+  {
+    🔙 👎
+  }
+  🤔 value ✅ candidate
+  {
+    🔙 👍
+  }
+  🔙 isDigit(value, candidate ➕ 1)
+}
+⚙️ 🐒 askCodeDigit(🐒 position)
+{
+  🖨️("Player 1, enter digit ", position, " of the code:")
+  🙂 🐒 digit
+  📖(digit)
+  🤔 isDigit(digit, 0)
+  {
+    🔙 digit
+  }
+  🖨️("A digit is a number from 0 to 9. Try again.")
+  🔙 askCodeDigit(position)
+}
+⚙️ Digits askGuess()
+{
+  🙂 🐒 a
+  🙂 🐒 b
+  🙂 🐒 c
+  🙂 🐒 d
+  📖(a)
+  📖(b)
+  📖(c)
+  📖(d)
+  🤔 isDigit(a, 0)
+  {
+    🤔 isDigit(b, 0)
+    {
+      🤔 isDigit(c, 0)
+      {
+        🤔 isDigit(d, 0)
+        {
+          🔙 Digits(a, b, c, d)
+        }
+      }
+    }
+  }
+  🖨️("Each entry must be a digit from 0 to 9. Try again:")
+  🔙 askGuess()
+}
+⚙️ 🐒 hideScreen(🐒 lines)
+{
+  🤔 lines ✅ 0
+  {
+    🔙 0
+  }
+  🖨️("")
+  🔙 hideScreen(lines ➖ 1)
+}
+🙂 Safe safe => Safe(Digits(askCodeDigit(1), askCodeDigit(2), askCodeDigit(3), askCodeDigit(4)))
+hideScreen(40)
+🖨️("The safe is closed. Player 2, you have 10 tries to guess the code.")
+⚙️ 🐒 play()
+{
+  🖨️("Tries left: ", safe.triesLeft(), ". Enter 4 digits with spaces between them, like 1 2 3 4:")
+  ☹️ Digits guess => askGuess()
+  🤔 safe.tryGuess(guess)
+  {
+    🖨️("The safe has been opened! You take ", safe.prize(), " coins with you.")
+    🔙 0
+  }
+  🤔 safe.triesLeft() ✅ 0
+  {
+    🖨️("No tries left. The safe stays closed.")
+    🔙 0
+  }
+  🔙 play()
+}
+play()

@@ -1,0 +1,15 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Point, fields: 2, member functions: 0)
+    FieldNode @3:3 (modifier: mutable, mutable: true, type: i32, name: x, default: false)
+    FieldNode @4:3 (modifier: mutable, mutable: true, type: i32, name: y, default: false)
+  DeclAndAssignNode @8:1 (modifier: mutable, mutable: true, type: Point, name: q)
+    CallNode @8:14 (name: Point, args: 2)
+      ValueNode @8:20 (INT: 4)
+      ValueNode @8:23 (INT: 5)
+  AssignmentNode @9:1 (name: q.y)
+    ChainNode @9:1 (path: q.y, ends in member call: false)
+      ValueNode @9:1 (ID: q)
+      FieldStepNode @9:3 (field: y)
+    ValueNode @9:8 (INT: 6)
+  PrintNode @10:1
+    ValueNode @10:4 (ID: q)

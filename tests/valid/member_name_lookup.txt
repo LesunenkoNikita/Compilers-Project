@@ -1,0 +1,29 @@
+🙂 🐒 x => 1000
+🙂 🐒 g => 7
+🏰 Box
+{
+  🙂 🐒 x
+  🛠️ 🐒 fieldX()
+  {
+    🔙 x
+  }
+  🛠️ 🐒 paramX(🐒 x)
+  {
+    🔙 x
+  }
+  🛠️ 🐒 localX()
+  {
+    ☹️ 🐒 x => 3
+    🔙 x
+  }
+  🛠️ 🐒 globalG()
+  {
+    🔙 g ➕ x
+  }
+}
+☹️ Box b => Box(42)
+🖨️(b.fieldX())
+🖨️(b.paramX(5))
+🖨️(b.localX())
+🖨️(b.globalG())
+🖨️(x)

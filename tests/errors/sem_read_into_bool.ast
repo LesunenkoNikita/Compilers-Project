@@ -1,0 +1,4 @@
+ProgramNode @1:1
+  DeclarationNode @1:1 (modifier: mutable, mutable: true, type: bool, name: flag)
+  ReadNode @2:1 (target: flag)
+    ValueNode @2:3 (ID: flag)

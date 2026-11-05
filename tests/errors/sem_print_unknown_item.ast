@@ -1,0 +1,4 @@
+ProgramNode @1:1
+  PrintNode @1:1
+    StringNode @1:4 (text: "ok ")
+    ValueNode @1:11 (ID: missing)

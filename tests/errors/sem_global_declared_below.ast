@@ -1,0 +1,7 @@
+ProgramNode @1:1
+  FunctionNode @1:1 (name: get, result: i32, params: 0)
+    Body
+      ReturnNode @3:3
+        ValueNode @3:5 (ID: later)
+  DeclAndAssignNode @5:1 (modifier: mutable, mutable: true, type: i32, name: later)
+    ValueNode @5:14 (INT: 5)

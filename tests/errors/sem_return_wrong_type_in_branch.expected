@@ -1,0 +1,1 @@
+compilation error: line 5:7: Function 'pick' must return i32, got bool

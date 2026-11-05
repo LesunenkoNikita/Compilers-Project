@@ -1,3 +1,0 @@
-ProgramNode @1:1
-  DeclAndAssignNode @1:1 (modifier: constant, mutable: false, type: i32, name: limit)
-    ValueNode @1:14 (INT: 100)

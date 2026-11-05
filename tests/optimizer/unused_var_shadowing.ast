@@ -1,0 +1,21 @@
+ProgramNode @1:1
+  DeclAndAssignNode @1:1 (modifier: mutable, mutable: true, type: i32, name: x)
+    ValueNode @1:10 (INT: 1)
+  IfNode @2:1
+    Condition
+      BinOpNode @2:5 (op: ==)
+        ValueNode @2:3 (ID: x)
+        ValueNode @2:7 (INT: 1)
+    Then
+      PrintNode @6:3
+        StringNode @6:6 (text: "inner")
+  PrintNode @8:1
+    ValueNode @8:4 (ID: x)
+  IfNode @10:1
+    Condition
+      ValueNode @10:3 (BOOL: true)
+    Then
+      DeclAndAssignNode @12:3 (modifier: mutable, mutable: true, type: i32, name: y)
+        ValueNode @12:12 (INT: 6)
+      PrintNode @13:3
+        ValueNode @13:6 (ID: y)

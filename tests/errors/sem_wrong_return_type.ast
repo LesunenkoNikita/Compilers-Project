@@ -1,0 +1,8 @@
+ProgramNode @1:1
+  FunctionNode @1:1 (name: isZero, result: i32, params: 1)
+    ParamNode @1:13 (type: i32, name: n)
+    Body
+      ReturnNode @3:3
+        BinOpNode @3:7 (op: ==)
+          ValueNode @3:5 (ID: n)
+          ValueNode @3:9 (INT: 0)

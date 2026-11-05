@@ -1,0 +1,19 @@
+ProgramNode @1:1
+  FunctionNode @1:1 (name: noisy, result: i32, params: 1)
+    ParamNode @1:12 (type: i32, name: v)
+    Body
+      PrintNode @3:3
+        StringNode @3:6 (text: "inside")
+      ReturnNode @4:3
+        ValueNode @4:5 (ID: v)
+  PrintNode @11:1
+    StringNode @11:4 (text: "before ")
+    CallNode @11:15 (name: noisy, args: 1)
+      ValueNode @11:21 (INT: 1)
+  DeclAndAssignNode @12:4 (modifier: immutable, mutable: false, type: i32, name: quiet$1$v)
+    ValueNode @12:10 (INT: 2)
+  PrintNode @8:3
+    StringNode @8:6 (text: "first")
+  PrintNode @12:1
+    ValueNode @9:5 (ID: quiet$1$v)
+    StringNode @12:14 (text: " after")

@@ -1,0 +1,26 @@
+🏰 Point
+{
+  🙂 🐒 x
+  🛠️ 🐒 shift(🐒 d)
+  {
+    x => x ➕ d
+    🔙 x
+  }
+}
+🏰 Circle
+{
+  🔒 🙂 Point center
+  🛠️ 🐒 move(🐒 d)
+  {
+    🔙 center.shift(d)
+  }
+  🛠️ Point where()
+  {
+    🔙 center
+  }
+}
+🙂 Circle c => Circle(Point(1))
+c.move(4)
+🖨️(c.where().x)
+🖨️(c.where())
+🖨️(c)

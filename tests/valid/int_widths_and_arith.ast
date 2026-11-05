@@ -1,0 +1,39 @@
+ProgramNode @1:1
+  DeclAndAssignNode @1:1 (modifier: mutable, mutable: true, type: i32, name: small)
+    ValueNode @1:14 (INT: 2147483647)
+  DeclAndAssignNode @2:1 (modifier: mutable, mutable: true, type: i64, name: wide)
+    ValueNode @2:13 (ID: small)
+  AssignmentNode @3:1 (name: wide)
+    BinOpNode @3:14 (op: +)
+      ValueNode @3:9 (ID: wide)
+      ValueNode @3:16 (INT: 1)
+  PrintNode @4:1
+    ValueNode @4:4 (ID: wide)
+  DeclAndAssignNode @5:1 (modifier: mutable, mutable: true, type: i64, name: product)
+    BinOpNode @5:21 (op: *)
+      ValueNode @5:16 (ID: wide)
+      ValueNode @5:24 (INT: 4)
+  PrintNode @6:1
+    ValueNode @6:4 (ID: product)
+  DeclAndAssignNode @7:1 (modifier: mutable, mutable: true, type: i32, name: back)
+    BinOpNode @7:18 (op: -)
+      ValueNode @7:13 (ID: wide)
+      ValueNode @7:20 (INT: 2147483000)
+  PrintNode @8:1
+    ValueNode @8:4 (ID: back)
+  DeclAndAssignNode @9:1 (modifier: mutable, mutable: true, type: i32, name: neg)
+    BinOpNode @9:14 (op: -)
+      ValueNode @9:12 (INT: 0)
+      ValueNode @9:16 (INT: 5)
+  PrintNode @10:1
+    BinOpNode @10:8 (op: *)
+      ValueNode @10:4 (ID: neg)
+      ValueNode @10:11 (INT: 3)
+  PrintNode @11:1
+    BinOpNode @11:10 (op: ==)
+      ValueNode @11:4 (ID: small)
+      ValueNode @11:12 (ID: wide)
+  PrintNode @12:1
+    BinOpNode @12:9 (op: ==)
+      ValueNode @12:4 (ID: wide)
+      ValueNode @12:11 (INT: 2147483648)

@@ -1,0 +1,25 @@
+🏰 Account
+{
+  🙂 🦍 balance
+  ☹️ 🐒 id
+  🛠️ 🦍 deposit(🦍 amount)
+  {
+    balance => balance ➕ amount
+    🔙 balance
+  }
+  🛠️ 🦍 depositTwice(🦍 amount)
+  {
+    deposit(amount)
+    🔙 deposit(amount)
+  }
+  🛠️ boo!👻 isRich()
+  {
+    🔙 balance ✅ 1000
+  }
+}
+🙂 Account acc => Account(900, 7)
+acc.depositTwice(50)
+🖨️(acc.isRich())
+🖨️(acc)
+☹️ Account frozen => Account(5, 8)
+🖨️(frozen.isRich())

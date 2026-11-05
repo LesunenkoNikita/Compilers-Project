@@ -1,0 +1,16 @@
+🏰 Point
+{
+  🙂 🐒 x
+  🔒 🙂 🐒 y
+}
+⚙️ 🐒 noisy(🐒 v)
+{
+  🖨️("called")
+  🔙 v
+}
+🙂 🐒 a => 3
+🖨️("Digit ", a, " is at position ", a ➕ 1)
+🖨️(a, a)
+🖨️("flag: ", 👍, ", point: ", Point(1, 2), "!")
+🖨️("before ", noisy(5))
+🖨️("no newline before this: ", "100% \"done\"")

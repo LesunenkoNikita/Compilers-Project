@@ -1,0 +1,51 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Account, fields: 2, member functions: 3)
+    FieldNode @3:3 (modifier: mutable, mutable: true, type: i64, name: balance, default: false)
+    FieldNode @4:3 (modifier: immutable, mutable: false, type: i32, name: id, default: false)
+    MemberFunctionNode @5:3 (struct: Account, name: deposit, result: i64, params: 1)
+      ParamNode @5:16 (type: i64, name: amount)
+      Body
+        AssignmentNode @7:5 (name: balance)
+          BinOpNode @7:24 (op: +)
+            ValueNode @7:16 (ID: balance)
+            ValueNode @7:26 (ID: amount)
+        ReturnNode @8:5
+          ValueNode @8:7 (ID: balance)
+    MemberFunctionNode @10:3 (struct: Account, name: depositTwice, result: i64, params: 1)
+      ParamNode @10:21 (type: i64, name: amount)
+      Body
+        CallStatementNode @12:5
+          CallNode @12:5 (name: deposit, args: 1)
+            ValueNode @12:13 (ID: amount)
+        ReturnNode @13:5
+          CallNode @13:7 (name: deposit, args: 1)
+            ValueNode @13:15 (ID: amount)
+    MemberFunctionNode @15:3 (struct: Account, name: isRich, result: bool, params: 0)
+      Body
+        ReturnNode @17:5
+          BinOpNode @17:15 (op: ==)
+            ValueNode @17:7 (ID: balance)
+            ValueNode @17:17 (INT: 1000)
+  DeclAndAssignNode @20:1 (modifier: mutable, mutable: true, type: Account, name: acc)
+    CallNode @20:18 (name: Account, args: 2)
+      ValueNode @20:26 (INT: 900)
+      ValueNode @20:31 (INT: 7)
+  CallStatementNode @21:1
+    ChainNode @21:1 (path: acc.depositTwice(), ends in member call: true)
+      ValueNode @21:1 (ID: acc)
+      MemberCallStepNode @21:5 (member function: depositTwice, args: 1)
+        ValueNode @21:18 (INT: 50)
+  PrintNode @22:1
+    ChainNode @22:4 (path: acc.isRich(), ends in member call: true)
+      ValueNode @22:4 (ID: acc)
+      MemberCallStepNode @22:8 (member function: isRich, args: 0)
+  PrintNode @23:1
+    ValueNode @23:4 (ID: acc)
+  DeclAndAssignNode @24:1 (modifier: immutable, mutable: false, type: Account, name: frozen)
+    CallNode @24:22 (name: Account, args: 2)
+      ValueNode @24:30 (INT: 5)
+      ValueNode @24:33 (INT: 8)
+  PrintNode @25:1
+    ChainNode @25:4 (path: frozen.isRich(), ends in member call: true)
+      ValueNode @25:4 (ID: frozen)
+      MemberCallStepNode @25:11 (member function: isRich, args: 0)

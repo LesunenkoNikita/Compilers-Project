@@ -1,0 +1,95 @@
+ProgramNode @1:1
+  FunctionNode @1:1 (name: sign, result: i32, params: 1)
+    ParamNode @1:11 (type: i32, name: n)
+    Body
+      IfNode @3:3
+        Condition
+          BinOpNode @3:7 (op: ==)
+            ValueNode @3:5 (ID: n)
+            ValueNode @3:9 (INT: 0)
+        Then
+          ReturnNode @5:5
+            ValueNode @5:7 (INT: 0)
+      IfNode @7:3
+        Condition
+          BinOpNode @7:7 (op: ==)
+            ValueNode @7:5 (ID: n)
+            BinOpNode @7:11 (op: -)
+              ValueNode @7:9 (INT: 0)
+              ValueNode @7:13 (INT: 0)
+        Then
+          PrintNode @9:5
+            StringNode @9:8 (text: "never here")
+      ReturnNode @11:3
+        ValueNode @11:5 (INT: 1)
+  FunctionNode @13:1 (name: contains, result: bool, params: 3)
+    ParamNode @13:19 (type: i32, name: a)
+    ParamNode @13:24 (type: i32, name: b)
+    ParamNode @13:29 (type: i32, name: x)
+    Body
+      IfNode @15:3
+        Condition
+          BinOpNode @15:7 (op: ==)
+            ValueNode @15:5 (ID: a)
+            ValueNode @15:9 (ID: x)
+        Then
+          ReturnNode @17:5
+            ValueNode @17:7 (BOOL: true)
+        Else
+          IfNode @21:5
+            Condition
+              BinOpNode @21:9 (op: ==)
+                ValueNode @21:7 (ID: b)
+                ValueNode @21:11 (ID: x)
+            Then
+              ReturnNode @23:7
+                ValueNode @23:9 (BOOL: true)
+            Else
+              ReturnNode @27:7
+                ValueNode @27:9 (BOOL: false)
+  StructNode @31:1 (name: Limit, fields: 1, member functions: 1)
+    FieldNode @33:3 (modifier: mutable, mutable: true, type: i32, name: max, default: false)
+    MemberFunctionNode @34:3 (struct: Limit, name: clamp, result: i32, params: 1)
+      ParamNode @34:14 (type: i32, name: v)
+      Body
+        IfNode @36:5
+          Condition
+            BinOpNode @36:9 (op: ==)
+              ValueNode @36:7 (ID: v)
+              BinOpNode @36:15 (op: +)
+                ValueNode @36:11 (ID: max)
+                ValueNode @36:17 (INT: 1)
+          Then
+            ReturnNode @38:7
+              ValueNode @38:9 (ID: max)
+        ReturnNode @40:5
+          ValueNode @40:7 (ID: v)
+  PrintNode @43:1
+    CallNode @43:4 (name: sign, args: 1)
+      ValueNode @43:9 (INT: 0)
+  PrintNode @44:1
+    CallNode @44:4 (name: sign, args: 1)
+      ValueNode @44:9 (INT: 7)
+  PrintNode @45:1
+    CallNode @45:4 (name: contains, args: 3)
+      ValueNode @45:13 (INT: 1)
+      ValueNode @45:16 (INT: 2)
+      ValueNode @45:19 (INT: 2)
+  PrintNode @46:1
+    CallNode @46:4 (name: contains, args: 3)
+      ValueNode @46:13 (INT: 1)
+      ValueNode @46:16 (INT: 2)
+      ValueNode @46:19 (INT: 3)
+  DeclAndAssignNode @47:1 (modifier: immutable, mutable: false, type: Limit, name: lim)
+    CallNode @47:17 (name: Limit, args: 1)
+      ValueNode @47:23 (INT: 10)
+  PrintNode @48:1
+    ChainNode @48:4 (path: lim.clamp(), ends in member call: true)
+      ValueNode @48:4 (ID: lim)
+      MemberCallStepNode @48:8 (member function: clamp, args: 1)
+        ValueNode @48:14 (INT: 11)
+  PrintNode @49:1
+    ChainNode @49:4 (path: lim.clamp(), ends in member call: true)
+      ValueNode @49:4 (ID: lim)
+      MemberCallStepNode @49:8 (member function: clamp, args: 1)
+        ValueNode @49:14 (INT: 4)

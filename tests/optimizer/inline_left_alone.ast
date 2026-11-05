@@ -1,0 +1,47 @@
+ProgramNode @1:1
+  FunctionNode @1:1 (name: countdown, result: i32, params: 1)
+    ParamNode @1:16 (type: i32, name: n)
+    Body
+      IfNode @3:3
+        Condition
+          BinOpNode @3:7 (op: ==)
+            ValueNode @3:5 (ID: n)
+            ValueNode @3:9 (INT: 0)
+        Then
+          ReturnNode @5:5
+            ValueNode @5:7 (INT: 0)
+      ReturnNode @7:3
+        CallNode @7:5 (name: countdown, args: 1)
+          BinOpNode @7:17 (op: -)
+            ValueNode @7:15 (ID: n)
+            ValueNode @7:19 (INT: 1)
+  FunctionNode @9:1 (name: pick, result: i32, params: 1)
+    ParamNode @9:11 (type: bool, name: first)
+    Body
+      IfNode @11:3
+        Condition
+          ValueNode @11:5 (ID: first)
+        Then
+          ReturnNode @13:5
+            ValueNode @13:7 (INT: 1)
+      ReturnNode @15:3
+        ValueNode @15:5 (INT: 2)
+  StructNode @17:1 (name: Box, fields: 1, member functions: 1)
+    FieldNode @19:3 (modifier: mutable, mutable: true, type: i32, name: x, default: false)
+    MemberFunctionNode @20:3 (struct: Box, name: get, result: i32, params: 0)
+      Body
+        ReturnNode @22:5
+          ValueNode @22:7 (ID: x)
+  DeclAndAssignNode @25:1 (modifier: immutable, mutable: false, type: Box, name: b)
+    CallNode @25:13 (name: Box, args: 1)
+      ValueNode @25:17 (INT: 9)
+  PrintNode @26:1
+    CallNode @26:4 (name: countdown, args: 1)
+      ValueNode @26:14 (INT: 3)
+  PrintNode @27:1
+    CallNode @27:4 (name: pick, args: 1)
+      ValueNode @27:9 (BOOL: true)
+  PrintNode @28:1
+    ChainNode @28:4 (path: b.get(), ends in member call: true)
+      ValueNode @28:4 (ID: b)
+      MemberCallStepNode @28:6 (member function: get, args: 0)

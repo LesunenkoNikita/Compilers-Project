@@ -1,0 +1,7 @@
+ProgramNode @1:1
+  DeclAndAssignNode @1:1 (modifier: mutable, mutable: true, type: i32, name: a)
+    ValueNode @1:10 (INT: 1)
+  DeclAndAssignNode @2:1 (modifier: mutable, mutable: true, type: i32, name: b)
+    ChainNode @2:10 (path: a.x, ends in member call: false)
+      ValueNode @2:10 (ID: a)
+      FieldStepNode @2:12 (field: x)

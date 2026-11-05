@@ -1,0 +1,19 @@
+🙂 🐒 counter => 1
+⚙️ 🐒 bump()
+{
+  counter => counter ➕ 10
+  🔙 counter
+}
+⚙️ 🐒 show(🐒 v)
+{
+  🖨️(v)
+  🔙 v
+}
+⚙️ 🐒 second()
+{
+  🖨️("second")
+  🔙 2
+}
+🖨️(counter ➕ bump())
+🖨️(show(1) ➕ second())
+🖨️(show(3))

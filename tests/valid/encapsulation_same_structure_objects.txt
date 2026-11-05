@@ -1,0 +1,21 @@
+🏰 Vec
+{
+  🔒 🙂 🐒 x
+  🔒 🙂 🐒 y
+  🔒 🛠️ 🐒 sum()
+  {
+    🔙 x ➕ y
+  }
+  🛠️ 🐒 dot(Vec o)
+  {
+    🔙 x ✖️ o.x ➕ y ✖️ o.y
+  }
+  🛠️ 🐒 sumOf(Vec o)
+  {
+    🔙 sum() ➕ o.sum()
+  }
+}
+☹️ Vec a => Vec(1, 2)
+☹️ Vec b => Vec(3, 4)
+🖨️(a.dot(b))
+🖨️(a.sumOf(b))

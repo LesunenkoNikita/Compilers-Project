@@ -1,0 +1,28 @@
+ProgramNode @1:1
+  StructNode @1:1 (name: Counter, fields: 1, member functions: 3)
+    FieldNode @3:5 (modifier: mutable, mutable: true, type: i32, name: value, default: false, access: private)
+    MemberFunctionNode @4:5 (struct: Counter, name: step, result: i32, params: 0, access: private)
+      Body
+        ReturnNode @6:5
+          ValueNode @6:7 (INT: 2)
+    MemberFunctionNode @8:5 (struct: Counter, name: bump, result: i32, params: 0, access: private)
+      Body
+        AssignmentNode @10:5 (name: value)
+          BinOpNode @10:20 (op: +)
+            ValueNode @10:14 (ID: value)
+            CallNode @10:22 (name: step, args: 0)
+        ReturnNode @11:5
+          ValueNode @11:7 (ID: value)
+    MemberFunctionNode @13:5 (struct: Counter, name: tick, result: i32, params: 0, access: public)
+      Body
+        CallStatementNode @15:5
+          CallNode @15:5 (name: bump, args: 0)
+        ReturnNode @16:5
+          CallNode @16:7 (name: bump, args: 0)
+  DeclAndAssignNode @19:1 (modifier: mutable, mutable: true, type: Counter, name: c)
+    CallNode @19:16 (name: Counter, args: 1)
+      ValueNode @19:24 (INT: 1)
+  PrintNode @20:1
+    ChainNode @20:4 (path: c.tick(), ends in member call: true)
+      ValueNode @20:4 (ID: c)
+      MemberCallStepNode @20:6 (member function: tick, args: 0)
